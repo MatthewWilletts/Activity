@@ -1,13 +1,17 @@
 library(data.table)
 library(wavelets)
 library(HMM)
+library(mhsmm)
 
 
-#data<-fread(input='/Users/Matthew/Documents/Oxford/Holmes/Prototype_data/test1.csv')
+
+data1<-read.csv(file='/Users/Matthew/Documents/Oxford/Holmes/Prototype_data/test1.csv',header=FALSE)
 data<-read.csv(file='/Users/Matthew/Documents/Oxford/Holmes/Prototype_data/p064ActivityEpoch_raw.csv',header=FALSE)
 data$V6<-NULL
 
 data<-data[c( rep(FALSE,4), TRUE ),]
+
+middle_data_wvlt<-dwt(data$V5[360352-2^15:360352+2^15])
 
 small_data_wvlt<-dwt(data$V5[1:2^15])
 data_wvlt<-dwt(data$V5)
