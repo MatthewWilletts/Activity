@@ -16,6 +16,9 @@ temp<-as.numeric(sub('csvP','',temp))
 ix<-order(temp)
 labelFiles<-labelFiles[ix]
 keeps<-c('participant','NewStart','NewEnd','label')
+
+rate=50
+
 FirstLast<-NULL
 
 
@@ -41,8 +44,37 @@ FirstLast$Duration<-FirstLast$Last-FirstLast$First
 #Create complete training chunks of accelerometer data
 for (i in 3:3){
 data<-fread(input =paste0(dataDirectory, accelFiles[i]))
-print(pmatch(paste0(as.character.POSIXt(FirstLast$First[i]),'.00'),data$V1,duplicates.ok = TRUE))
-print(pmatch(paste0(as.character.POSIXt(FirstLast$Last[i]),'.00'),data$V1,duplicates.ok = TRUE))
+start_row<-pmatch(paste0(as.character.POSIXt(FirstLast$First[i]),'.00'),data$V1,duplicates.ok = TRUE)
+end_row<-pmatch(paste0(as.character.POSIXt(FirstLast$Last[i]),'.00'),data$V1,duplicates.ok = TRUE)
+
+#delete data points outside labelled epoch
+data<-data[start_row:end_row,]
+
+#delete unneccesary columns
+data[,V6:=NULL]
+data[,V5:=NULL]
+data[,V1:=NULL]
+
+#cut down from 100Hz data to new rate (new rate must be a factor of 100)
+ind<-seq(1,nrow(data),by=100/rate)
+data<-data[ind,]
+
+duration=as.numeric(FirstLast$Duration[i])
+#Now create header needed for TLBC
+lines=paste0('------------ Data File Created By ActiGraph GT3X+ ActiLife v6.3.0 Firmware v2.0.0 date format M/d/yyyy at ',rate,' Hz  Filter Normal -----------
+  Serial Number: MRA1CXXXXXXXX
+Start Time ',strftime(FirstLast$First[i],format='%H:%M:%S'),'
+Start Date ',strftime(FirstLast$First[i],format='%m/%d/%Y'),'
+Epoch Period (hh:mm:ss) ',paste(floor(duration)),round((duration-floor(duration))*60),)),'
+Download Time 08:22:30
+Download Date 6/10/2011
+Current Memory Address: 0
+Current Battery Voltage: 4.26     Mode = 12
+--------------------------------------------------')
+
+
+
+
 }
 
 
