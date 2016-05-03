@@ -76,13 +76,17 @@ testingNoLabel<-list()
 for (i in 1:length(listOfIndividuals)){
   #create instance level information
   boutFileAddress<-paste(cleanBoutDirectory,listOfIndividuals[i],sep='/')
-  if(file.exists(file.path(outputLabelDirectory,identifiers[i])))==FALSE){
+  if(file.exists(file.path(outputLabelDirectory,identifiers[i]))==FALSE){
   extractLabelsSingleFile(inputFile = boutFileAddress,outputDir = outputLabelDirectory,winSize = ws)
   }
   #create features
   accelFileAddress<-paste(cleanDataDirectory,listOfDataFiles[i],sep='/')
-  extractAccFeatsFile(inputFile = accelFileAddress,outputPath = paste(outputFeatureDirectory,identifiers[i],sep='/'),winSize = 60)
+  if(file.exists(file.path(outputFeatureDirectory,identifiers[i]))==FALSE){
+  extractAccFeatsFile(inputFile = accelFileAddress,outputPath = file.path(outputFeatureDirectory,identifiers[i]),winSize = 60)
+  }
 }
+
+  
 
 
 for (i in 1:length(listOfIndividuals)){
