@@ -41,7 +41,7 @@ labelData$tempEnd<-strptime(labelData$endTime,'%m/%d/%Y %H:%M',tz = 'GMT')
 labelData$duration<-labelData$tempEnd-labelData$NewStart
 labelData<-labelData[-(labelData$duration==0),]
 labelData$NewEnd<-labelData$tempEnd[length(labelData$NewStart)]
-labelData$NewEnd[1:(length(labelData$NewStart)-1)]<-labelData$NewStart[2:(length(labelData$NewStart))]-1
+labelData$NewEnd[1:(length(labelData$NewStart)-1)]<-labelData$NewStart[2:(length(labelData$NewStart))]
 labelData$NewEnd[length(labelData$NewStart)]<-labelData$tempEnd[length(labelData$NewStart)]
 labelData<-labelData[,keeps]
 colnames(labelData)<-c('identifier','StartDateTime','EndDateTime','behavior')
@@ -53,7 +53,7 @@ FirstLast=rbind(FirstLast,data.frame(labelData$identifier[1],labelData$StartDate
 
 colnames(FirstLast)<-c('identifier','First','Last')
 FirstLast$Duration<-FirstLast$Last-FirstLast$First
-
+  
 
 #Create complete training chunks of accelerometer data
 for (i in 9:length(accelFiles)){
@@ -89,8 +89,8 @@ Current Battery Voltage: 0     Mode = 0
 --------------------------------------------------')
 
 if(file.exists(paste0(cleanDataDirectory,FirstLast$identifier[i]))==FALSE){
-  write(x=lines,file=paste0(cleanDataDirectory,FirstLast$identifier[i],'.csv'))
-  write.table(x=data,file=paste0(cleanDataDirectory,FirstLast$identifier[i])'.csv',append = TRUE,row.names = FALSE,col.names = FALSE,sep=',') 
+  write(x=lines,file=paste0(cleanDataDirectory,FirstLast$identifier[i]))
+  write.table(x=data,file=paste0(cleanDataDirectory,FirstLast$identifier[i]),append = TRUE,row.names = FALSE,col.names = FALSE,sep=',') 
 }
 
 
