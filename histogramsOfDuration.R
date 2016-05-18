@@ -3,6 +3,8 @@
 library(randomForest)
 library(data.table)
 library(TLBC)
+library(MASS)
+
 
 #Window size in seconds
 ws=60
@@ -27,6 +29,24 @@ if(Sys.info()[['sysname']]=="Darwin"){
 
 plotDirectory<-paste0(dataDirectory,'/plots')
 
+#Directories for RF and HMM models
+RFoutput<-paste0(tempDirectory,'/RFoutput')
+HMMoutput<-paste0(tempDirectory,'/HMMoutput')
+Predictions<-paste0(tempDirectory,'/Predictions')
+
+outputLabelDirectory<-paste0(tempDirectory,'/Bout_Labels_',ws)
+outputFeatureDirectory<-paste0(tempDirectory,'/Accel_Features_',ws)
+
+#Semi Supervised Learning Output
+semiSupervisedLabelDirectory<-paste0(dataDirectory,'/SemiSupLabels')
+semiSupervisedFeatureDirectory<-paste0(dataDirectory,'/SemiSupFeatures')
+
+
+#Cut Down to certainly correct output
+certainlyTrueLabelDirectory<-paste0(dataDirectory,'/CertainlyTrueLabels')
+certainlyTrueFeatureDirectory<-paste0(dataDirectory,'/CertainlyTrueFeatures')
+
+
 
 cleanDataFiles<-list.files(cleanDataDirectory)
 
@@ -41,6 +61,7 @@ cleanData<-rbindlist((listOfCleanData))
 cleanBoutFiles<-list.files(cleanBoutDirectory)
 
 listOfCleanBouts<-list()
+
 for(i in 1:length(cleanBoutFiles)){
   listOfCleanBouts[[i]]<-fread(input = paste0(cleanBoutDirectory,'/',cleanBoutFiles[i]))
 }
@@ -51,8 +72,18 @@ cleanBouts$Duration<-as.numeric(as.POSIXct(cleanBouts$EndDateTime)-as.POSIXct(cl
 cleanBouts<-cleanBouts[cleanBouts$Duration>0,]
 
 behaviors<-unique(cleanBouts$behavior)
+
 for(i in 1:length(behaviors)){
+  
   behaviorBouts<-cleanBouts[cleanBouts$behavior==behaviors[i],]
+  
+  values<-fitdistr(behaviorBouts$Duration,"geometric")
+  sim<-qgeom(ppoints(length(behaviorBouts$Duration)),prob=values$estimate)
+  png(paste0(plotDirectory,'/QQ_',behaviors[i],'.png'))
+  qqplot(x = sim,behaviorBouts$Duration,xlab = 'Theoretical quantiles',ylab = 'Duration quantiles')
+  qqline(sim, distribution = function(p) qgeom(p, values$estimate),
+         prob = c(0.25, 0.75), col = "red")
+  dev.off()
   png(paste0(plotDirectory,'/Hist_',behaviors[i],'.png'))
   hist(behaviorBouts$Duration,main =paste0('Histogram of Duration of ',behaviors[i],' for initial data'))
   dev.off()

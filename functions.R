@@ -29,7 +29,7 @@ return(FirstLast)
 
 
 #Function for cleaning up raw accelerometer data to machine-readible format for analysis
-cleanAccelData<-function(FirstLast=FirstLast,accelFiles=accelFiles,dataDirectory=dataDirectory,cleanDataDirectory=cleanDataDirectory){
+cleanAccelData<-function(FirstLast=FirstLast,accelFiles=accelFiles,rawAccelDataDir=rawAccelDataDir,cleanDataDirectory=cleanDataDirectory){
 
 
   if(dir.exists(cleanDataDirectory)==FALSE){
@@ -43,7 +43,7 @@ cleanAccelData<-function(FirstLast=FirstLast,accelFiles=accelFiles,dataDirectory
       
       print(paste0('reading in file ',accelFiles[i]))
 
-      data<-fread(input=paste0(dataDirectory,accelFiles[i]))
+      data<-fread(input=paste0(rawAccelDataDir,accelFiles[i]))
 
       start_row<-pmatch(paste0(as.character.POSIXt(FirstLast$First[i]),'.00'),data$V1,duplicates.ok = TRUE)
 
@@ -71,8 +71,8 @@ cleanAccelData<-function(FirstLast=FirstLast,accelFiles=accelFiles,dataDirectory
       #Now create header needed for TLBC
 lines=paste0('------------ Data File Created By ActiGraph GT3X+ ActiLife v6.3.0 Firmware v2.0.0 date format M/d/yyyy at ',rate,' Hz  Filter Normal -----------
 Serial Number: MRA1CXXXXXXXX
-Start Time ',strftime(FirstLast$First[i],format='%H:%M:%S'),'
-Start Date ',strftime(FirstLast$First[i],format='%m/%d/%Y'),'
+Start Time ',strftime(FirstLast$First[i],format='%H:%M:%S',tz='GMT'),'
+Start Date ',strftime(FirstLast$First[i],format='%m/%d/%Y',tz='GMT'),'
 Epoch Period (hh:mm:ss) ',paste0(str_pad(floor(duration), width=2, pad="0"),':',str_pad(round((duration-floor(duration))*60), width=2, pad="0"),':00'),'
 Download Time 00:00:00
 Download Date 1/1/2016
@@ -96,3 +96,18 @@ rm (data)
 #end of function
 return('complete')
 }
+
+
+#Function to collapse down labels to
+reduceLabels<-function(data,labelsToReduce,overallLabel){
+  #labelsToReduce is a list, each element of which is a vector of strings giving the label names to be combined
+  #overallLabel is a vector of strings, each entry gives the new overall name for the labels in the corresponding
+  #list entry of labelsToReduce
+  for (i in 1:length(overallLabel)){
+  ix<-which(data$behavior %in% labelsToReduce[[i]])
+  data$behavior[ix]<-overallLabel[i]
+  }
+return(data)
+}
+
+
