@@ -3,8 +3,8 @@
 library(optparse)
 library(randomForest)
 library(data.table)
-library(RSpectra)
-library(mhsmm)
+# library(RSpectra)
+# library(mhsmm)
 library(parallel)
 
 #First, define data directories
