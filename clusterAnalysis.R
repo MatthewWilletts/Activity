@@ -40,81 +40,81 @@ performance<-list()
 
 trainingNoLabel<-list()
 testingNoLabel<-list()
-
-#Load up Data
-for (i in 1:length(listOfIndividuals)){
-  #create instance level information
-  boutFileAddress<-paste(cleanBoutDirectory,listOfIndividuals[i],sep='/')
-  if(file.exists(file.path(outputLabelDirectory,identifiers[i]))==FALSE){
-    extractLabelsSingleFile(inputFile = boutFileAddress,outputDir = outputLabelDirectory,winSize = ws)
-  }
-  #create features
-  accelFileAddress<-paste(cleanDataDirectory,listOfDataFiles[i],sep='/')
-  if(file.exists(file.path(outputFeatureDirectory,identifiers[i]))==FALSE){
-    extractAccFeatsFile(inputFile = accelFileAddress,outputPath = file.path(outputFeatureDirectory,identifiers[i]),winSize = 60)
-  }
-  
-  
-  #Step 1 - Load up all data
-  
-  #Load in instance level labels
-  InstanceData[[i]]<-NULL
-  InstanceDir<-file.path(outputLabelDirectory,identifiers[i])
-  InstanceFiles<-list.files(InstanceDir)
-  tempInstanceData<-NULL
-  
-  #Load in features
-  FeatureData[[i]]<-NULL
-  tempFeatureData<-NULL
-  FeatureDir<-file.path(outputFeatureDirectory,identifiers[i])
-  FeatureFiles<-list.files(FeatureDir)
-  
-  
-  
-  for(k in 1:length(InstanceFiles)){
-    
-    #load in instance data
-    temptempInstanceData<-read.csv(file=file.path(InstanceDir,InstanceFiles[k]),stringsAsFactors = F)
-    
-    #load in feature data
-    temptempFeatureData<-read.csv(file=file.path(FeatureDir,FeatureFiles[k]),stringsAsFactors = F)
-    
-    #discard all data before first labelled data point and after last labelled point
-    kx<-which(!temptempInstanceData$behavior=='nolabel')
-    if(length(kx)>0){
-      maxIndex<-min(kx[length(kx)],nrow(temptempFeatureData))
-      temptempInstanceData<-temptempInstanceData[kx[1]:maxIndex,]
-      tempInstanceData<-rbind(tempInstanceData,temptempInstanceData)
-      
-      temptempFeatureData<-temptempFeatureData[kx[1]:maxIndex,]
-      tempFeatureData<-rbind(tempFeatureData,temptempFeatureData)
-    }
-  }
-  
-  InstanceData[[i]]<-tempInstanceData
-  rm(tempInstanceData)
-  rm(temptempInstanceData)
-  FeatureData[[i]]<-tempFeatureData
-  rm(tempFeatureData)
-  rm(temptempFeatureData)
-  
-  
-  #cut down Instance data to size of Feature data, or vice versa
-  
-  if(nrow(FeatureData[[i]])<nrow(InstanceData[[i]])){
-    InstanceData[[i]]<-InstanceData[[i]][seq(1,nrow(FeatureData[[i]])),]
-  } else {
-    FeatureData[[i]]<-FeatureData[[i]][seq(1,nrow(InstanceData[[i]])),]
-  }
-  
-  
-  #add participant labels to data
-  InstanceData[[i]]$name<-identifiers[i]
-  FeatureData[[i]]$name<-identifiers[i]
-  
-  
-  #  print(nrow(InstanceData[[i]]))
-  # print(nrow(FeatureData[[i]]))
-}
-
-
+# 
+# #Load up Data
+# for (i in 1:length(listOfIndividuals)){
+#   #create instance level information
+#   boutFileAddress<-paste(cleanBoutDirectory,listOfIndividuals[i],sep='/')
+#   if(file.exists(file.path(outputLabelDirectory,identifiers[i]))==FALSE){
+#     extractLabelsSingleFile(inputFile = boutFileAddress,outputDir = outputLabelDirectory,winSize = ws)
+#   }
+#   #create features
+#   accelFileAddress<-paste(cleanDataDirectory,listOfDataFiles[i],sep='/')
+#   if(file.exists(file.path(outputFeatureDirectory,identifiers[i]))==FALSE){
+#     extractAccFeatsFile(inputFile = accelFileAddress,outputPath = file.path(outputFeatureDirectory,identifiers[i]),winSize = 60)
+#   }
+#   
+#   
+#   #Step 1 - Load up all data
+#   
+#   #Load in instance level labels
+#   InstanceData[[i]]<-NULL
+#   InstanceDir<-file.path(outputLabelDirectory,identifiers[i])
+#   InstanceFiles<-list.files(InstanceDir)
+#   tempInstanceData<-NULL
+#   
+#   #Load in features
+#   FeatureData[[i]]<-NULL
+#   tempFeatureData<-NULL
+#   FeatureDir<-file.path(outputFeatureDirectory,identifiers[i])
+#   FeatureFiles<-list.files(FeatureDir)
+#   
+#   
+#   
+#   for(k in 1:length(InstanceFiles)){
+#     
+#     #load in instance data
+#     temptempInstanceData<-read.csv(file=file.path(InstanceDir,InstanceFiles[k]),stringsAsFactors = F)
+#     
+#     #load in feature data
+#     temptempFeatureData<-read.csv(file=file.path(FeatureDir,FeatureFiles[k]),stringsAsFactors = F)
+#     
+#     #discard all data before first labelled data point and after last labelled point
+#     kx<-which(!temptempInstanceData$behavior=='nolabel')
+#     if(length(kx)>0){
+#       maxIndex<-min(kx[length(kx)],nrow(temptempFeatureData))
+#       temptempInstanceData<-temptempInstanceData[kx[1]:maxIndex,]
+#       tempInstanceData<-rbind(tempInstanceData,temptempInstanceData)
+#       
+#       temptempFeatureData<-temptempFeatureData[kx[1]:maxIndex,]
+#       tempFeatureData<-rbind(tempFeatureData,temptempFeatureData)
+#     }
+#   }
+#   
+#   InstanceData[[i]]<-tempInstanceData
+#   rm(tempInstanceData)
+#   rm(temptempInstanceData)
+#   FeatureData[[i]]<-tempFeatureData
+#   rm(tempFeatureData)
+#   rm(temptempFeatureData)
+#   
+#   
+#   #cut down Instance data to size of Feature data, or vice versa
+#   
+#   if(nrow(FeatureData[[i]])<nrow(InstanceData[[i]])){
+#     InstanceData[[i]]<-InstanceData[[i]][seq(1,nrow(FeatureData[[i]])),]
+#   } else {
+#     FeatureData[[i]]<-FeatureData[[i]][seq(1,nrow(InstanceData[[i]])),]
+#   }
+#   
+#   
+#   #add participant labels to data
+#   InstanceData[[i]]$name<-identifiers[i]
+#   FeatureData[[i]]$name<-identifiers[i]
+#   
+#   
+#   #  print(nrow(InstanceData[[i]]))
+#   # print(nrow(FeatureData[[i]]))
+# }
+# 
+# 
