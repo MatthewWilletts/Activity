@@ -3,15 +3,23 @@
 library(optparse)
 library(randomForest)
 library(data.table)
-# library(RSpectra)
-# library(mhsmm)
+library(RSpectra)
+library(mhsmm)
 library(parallel)
 
+
+source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
 
 #First, define data directories
 
 dataDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/capture-processed'
 labelDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/label-data/label-dictionary-9-classes'
+instanceLabelDirectory<-'/data/dph-ukbaccworkgroup/magd4534/label-data/instance-label-dictionary-9-classes'
+
+
+#dataDirectory<-'/Users/Matthew/Documents/Oxford/Activity/FeatureData'
+#labelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/LabelData'
+#instanceLabelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/InstanceLabelData'
 
 
 #Directories for RF and HMM models
@@ -45,7 +53,9 @@ iFeatures<-match(bothData,featureIdentifiers)
 jointLabelFiles<-listOfLabelFiles[iLabels]
 jointFeatureFiles<-listOfFeatureFiles[iFeatures]
 jointFFTFiles<-listOfFFTFiles[iFeatures]
+jointInstanceFiles<-gsub(listOfFeatureFiles[iFeatures],pattern = "ActivityEpoch",replacement = '')
 
+jointFiles<-mapply(c, jointLabelFiles, jointFeatureFiles,jointFFTFiles,jointInstanceFiles, SIMPLIFY=FALSE)
 
 
 InstanceData<-list()
@@ -53,11 +63,11 @@ FeatureData<-list()
 
 #Now load up Instance data and Feature Data
 
-FeatureData<-mclapply(file.path(dataDirectory, jointFeatureFiles),fread,mc.cores=16)
-
-FFTData<-mclapply(file.path(dataDirectory, jointFFTFiles),fread,mc.cores=16)
-
-LabelData<-mclapply(file.path(labelDirectory, jointLabelFiles),fread,mc.cores=16)
+Data<-mclapply(X = jointFiles,FUN = function(x) cleanData(jointFiles = x,
+                                                        drop=dropvals,
+                                                        instanceLabelDirectory = instanceLabelDirectory,
+                                                        labelDirectory = labelDirectory,
+                                                        dataDirectory = dataDirectory),mc.cores = 10)
 
 
 
