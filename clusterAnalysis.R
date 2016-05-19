@@ -7,10 +7,12 @@ library(data.table)
 # library(mhsmm)
 library(parallel)
 
+
 #First, define data directories
 
 dataDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/capture-processed'
 labelDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/label-data/label-dictionary-9-classes'
+
 
 #Directories for RF and HMM models
 RFoutput<-paste0(dataDirectory,'/RFoutput')
@@ -20,21 +22,44 @@ HMMoutput<-paste0(dataDirectory,'/HMMoutput')
 Predictions<-paste0(dataDirectory,'/Predictions')
 
 
-listOfFeatureFiles<-list.files(dataDirectory,pattern = "\\Epoch[.]csv$")
-listOfFFTFiles<-list.files(dataDirectory,pattern = "\\Epoch_fft[.]csv$")
+listOfFeatureFiles<-list.files(dataDirectory,pattern = "\\ActivityEpoch[.]csv$")
+listOfFFTFiles<-list.files(dataDirectory,pattern = "\\ActivityEpoch_fft[.]csv$")
 
-listOfLabelFiles<-list.files(labelDirectory,pattern = "\\[.]csv$")
+listOfLabelFiles<-list.files(labelDirectory,pattern = "\\.csv$")
 
 
-identifiers<-gsub(listOfIndividuals,pattern = "\\Epoch[.]csv$",replacement = '')
+labelIdentifiers<-gsub(listOfLabelFiles,pattern = ".csv$",replacement = '')
+labelIdentifiers<-gsub(labelIdentifiers,pattern = "[P]",replacement ='')
+listOfLabelFiles<-listOfLabelFiles[order(as.numeric(labelIdentifiers))]
+labelIdentifiers<-labelIdentifiers[order(as.numeric(labelIdentifiers))]
+labelIdentifiers<-sprintf("p%03d", as.numeric(labelIdentifiers))
 
-cat(head(identifiers))
+
+featureIdentifiers<-gsub(listOfFeatureFiles,pattern = "ActivityEpoch.csv$",replacement = '')
+
+#Now find which participants have both feature and label data
+bothData<-intersect(labelIdentifiers,featureIdentifiers)
+iLabels<-match(bothData,labelIdentifiers)
+iFeatures<-match(bothData,featureIdentifiers)
+
+jointLabelFiles<-listOfLabelFiles[iLabels]
+jointFeatureFiles<-listOfFeatureFiles[iFeatures]
+jointFFTFiles<-listOfFFTFiles[iFeatures]
+
 
 
 InstanceData<-list()
 FeatureData<-list()
 
-IndexOfInstanceFiles<-list()
+#Now load up Instance data and Feature Data
+
+FeatureData<-mclapply(file.path(dataDirectory, jointFeatureFiles),fread,mc.cores=16)
+
+FFTData<-mclapply(file.path(dataDirectory, jointFFTFiles),fread,mc.cores=16)
+
+LabelData<-mclapply(file.path(labelDirectory, jointLabelFiles),fread,mc.cores=16)
+
+
 
 performance<-list()
 
