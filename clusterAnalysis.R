@@ -26,7 +26,7 @@ listOfFFTFiles<-list.files(dataDirectory,pattern = "\\Epoch_fft[.]csv$")
 listOfLabelFiles<-list.files(labelDirectory,pattern = "\\[.]csv$")
 
 
-identifiers<-gsub(listOfIndividuals,pattern = "\\Epocj.csv$",replacement = '')
+identifiers<-gsub(listOfIndividuals,pattern = "\\Epoch[.]csv$",replacement = '')
 
 cat(head(identifiers))
 
