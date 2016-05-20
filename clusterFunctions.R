@@ -27,7 +27,7 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     labelData$NewStart[2:nrows]<-labelData$NewEnd[1:nrows-1]
     
     labelData<-labelData[,c(1,4,5,8),with=FALSE]
-    colnames(labelData)<-c('identifier','behavior','StartDateTime','EndDateTime')
+    setnames(labelData,c('identifier','behavior','StartDateTime','EndDateTime'))
     
     #Load up Feature Data
     featureData<-fread(file.path(dataDirectory,jointFiles[2]))

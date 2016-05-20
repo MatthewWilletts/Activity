@@ -6,6 +6,7 @@ library(data.table)
 library(RSpectra)
 library(mhsmm)
 library(parallel)
+library(stringr)
 
 
 source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
