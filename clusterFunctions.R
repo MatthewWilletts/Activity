@@ -1,7 +1,7 @@
 #Function for cleaning up raw bout data to machine-readible format for analysis
 #cleanData <- function(jointFiles=jointFiles,labelDirectory=labelDirectory,dataDirectory=dataDirectory,drop=dropvals,outputLabelDir=outputLabelDir,instanceLabelDirectory=instanceLabelDirectory){
 
-cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outputLabelDir,instanceLabelDirectory){
+cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outputLabelDir,instanceLabelDirectory,outputDataDirectory){
   
   
   participantID<-gsub(jointFiles[4],pattern = ".csv",replacement = '')
@@ -84,10 +84,10 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     write.csv(x=instanceLabelData,file=paste0(instanceLabelDirectory,'/',labelData$identifier[1],'.csv'),row.names=FALSE,append = FALSE)
     
     print(paste0('Writing feature data file ',labelledFeatureData$identifier[1],'.csv'))
-    write.csv(x=labelledFeatureData,file=paste0(dataDirectory,'/',labelData$identifier[1],'CleanFeature.csv'),row.names=FALSE,append = FALSE)
+    write.csv(x=labelledFeatureData,file=paste0(outputDataDirectory,'/',labelData$identifier[1],'CleanFeature.csv'),row.names=FALSE,append = FALSE)
     
     print(paste0('Writing FFT data file ',labelledFFTData$identifier[1],'.csv'))
-    write.csv(x=labelledFFTData,file=paste0(dataDirectory,'/',labelData$identifier[1],'CleanFFT.csv'),row.names=FALSE,append = FALSE)
+    write.csv(x=labelledFFTData,file=paste0(outputDataDirectory,'/',labelData$identifier[1],'CleanFFT.csv'),row.names=FALSE,append = FALSE)
     
   } else {
     print(paste0('error: files for ',labelData$identifier[1],'.csv already exists'))

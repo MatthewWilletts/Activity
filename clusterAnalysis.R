@@ -15,7 +15,7 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
 dataDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/capture-processed'
 labelDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/label-data/label-dictionary-9-classes'
 instanceLabelDirectory<-'/data/dph-ukbaccworkgroup/magd4534/label-data/instance-label-dictionary-9-classes'
-
+outputDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/capture-processed'
 
 #dataDirectory<-'/Users/Matthew/Documents/Oxford/Activity/FeatureData'
 #labelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/LabelData'
@@ -62,12 +62,14 @@ InstanceData<-list()
 FeatureData<-list()
 
 #Now load up Instance data and Feature Data
+dropvals<-c(4,5)
 
 Data<-mclapply(X = jointFiles,FUN = function(x) cleanData(jointFiles = x,
                                                         drop=dropvals,
                                                         instanceLabelDirectory = instanceLabelDirectory,
                                                         labelDirectory = labelDirectory,
-                                                        dataDirectory = dataDirectory),mc.cores = 10)
+                                                        dataDirectory = dataDirectory,
+                                                        outputDataDirectory=outputDataDirectory),mc.cores = 10)
 
 
 
