@@ -65,12 +65,13 @@ FeatureData<-list()
 #Now load up Instance data and Feature Data
 dropvals<-c(4,5)
 
-Data<-mclapply(X = jointFiles,FUN = function(x) cleanData(jointFiles = x,
+Data<-lapply(X = jointFiles,FUN = function(x) cleanData(jointFiles = x,
                                                         drop=dropvals,
                                                         instanceLabelDirectory = instanceLabelDirectory,
                                                         labelDirectory = labelDirectory,
                                                         dataDirectory = dataDirectory,
-                                                        outputDataDirectory=outputDataDirectory),mc.cores = 10)
+                                                        outputDataDirectory=outputDataDirectory))
+                                                        #,mc.cores = 10)
 
 
 

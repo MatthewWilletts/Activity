@@ -65,9 +65,16 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     labelData$EndDateTime<-round5secs(labelData$EndDateTime,startTime = labelData$StartDateTime[1])
     
     #now we need to turn from bout level labels to annotations. Here we use a slightly modified TLBC function, annotationsToLabels
-    extractLabelsSingleFile(labelData,winSize = 5,instanceLabelDirectory = instanceLabelDirectory)
+    extractLabelsSingleFile(labelData, identifier= participantID,winSize = 5,instanceLabelDirectory = instanceLabelDirectory)
     
-    instanceLabelData<-fread(file.path(instanceLabelDirectory,jointFiles[4]))
+    instanceLabelData<-fread(file.path(instanceLabelDirectory, participantID,'ALL.csv'))
+    
+    print(paste0('Writing ALL feature data file ', participantID,'.csv'))
+    write.csv(x=labelledFeatureData,file=paste0(outputDataDirectory,'/', participantID,'ALLFeature.csv'),row.names=FALSE,append = FALSE)
+    
+    print(paste0('Writing ALL FFT data file ', participantID,'.csv'))
+    write.csv(x=labelledFFTData,file=paste0(outputDataDirectory,'/', participantID,'ALLFFT.csv'),row.names=FALSE,append = FALSE)
+
     
     
     #discard all feaure data before first labelled data point and after last labelled point
@@ -80,20 +87,22 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
       labelledFFTData<-labelledFFTData[kx[1]:maxIndex,]
     }
     
-    print(paste0('Writing instance data file ',instanceLabelData$identifier[1],'.csv'))
-    write.csv(x=instanceLabelData,file=paste0(instanceLabelDirectory,'/',labelData$identifier[1],'.csv'),row.names=FALSE,append = FALSE)
+    print(paste0('Writing CLEAN instance data file ', participantID,'.csv'))
+    write.csv(x=instanceLabelData,file=paste0(instanceLabelDirectory,'/', participantID,'Clean.csv'),row.names=FALSE,append = FALSE)
     
-    print(paste0('Writing feature data file ',labelledFeatureData$identifier[1],'.csv'))
-    write.csv(x=labelledFeatureData,file=paste0(outputDataDirectory,'/',labelData$identifier[1],'CleanFeature.csv'),row.names=FALSE,append = FALSE)
+    print(paste0('Writing CLEAN feature data file ', participantID,'.csv'))
+    write.csv(x=labelledFeatureData,file=paste0(outputDataDirectory,'/', participantID,'CleanFeature.csv'),row.names=FALSE,append = FALSE)
     
-    print(paste0('Writing FFT data file ',labelledFFTData$identifier[1],'.csv'))
-    write.csv(x=labelledFFTData,file=paste0(outputDataDirectory,'/',labelData$identifier[1],'CleanFFT.csv'),row.names=FALSE,append = FALSE)
+    print(paste0('Writing CLEANFFT data file ', participantID,'.csv'))
+    write.csv(x=labelledFFTData,file=paste0(outputDataDirectory,'/', participantID,'CleanFFT.csv'),row.names=FALSE,append = FALSE)
     
+      return(list(instanceLabelData,labelledFeatureData,labelledFFTData))
+
   } else {
-    print(paste0('error: files for ',labelData$identifier[1],'.csv already exists'))
+    print(paste0('error: files for ', participantID,'.csv already exists'))
+ 	return(list())
   }
   
-  return(list(instanceLabelData,labelledFeatureData,labelledFFTData))
 }
 
 #Function for rounding to the nearest 5 seconds, based at the first time entry (ie first time is 00:00:02, all times will be rounded to end with 2 or 7 seconds)
@@ -106,19 +115,19 @@ round5secs <- function( x,startTime) {
 } 
 
 
-extractLabelsSingleFile = function(all_bouts, winSize,instanceLabelDirectory) {
+extractLabelsSingleFile = function(all_bouts,identifier, winSize,instanceLabelDirectory) {
   
   dateFmt = '%Y-%m-%d %H:%M:%S'
   tz = 'GMT'
   
   annotations = unique(all_bouts$behavior)
   actNames = sub(" ", "", annotations)
-  identifiers = unique(all_bouts$identifier)
+  identifiers = identifier
   for (id in 1:length(identifiers)) {
     cat(identifiers[id], "\n")
     
     bouts = all_bouts[all_bouts$identifier == identifiers[id], ]
-    outputFile = file.path(instanceLabelDirectory, paste0(identifiers[id],'.csv'))
+    outputFile = file.path(instanceLabelDirectory, paste0(identifiers[id],'ALL.csv'))
     out<-outputFile
     r = 1
     l = 1
