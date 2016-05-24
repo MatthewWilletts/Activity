@@ -9,8 +9,8 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
   if(file.exists(file.path(instanceLabelDirectory,jointFiles[4]))==FALSE){
     
     labelData<-read.csv(file.path(labelDirectory,jointFiles[1]))
-    drops <- c("annotation","source")
-    test<-labelData[ , !(names(labelData) %in% drops)])    
+    keeps <- c('participant','label','startTime','endTime')
+    labelData<-labelData[ , (names(labelData) %in% keeps)]
     
     labelData$NewStart<-(as.POSIXct(labelData$startTime,'%Y-%m-%d %H:%M:%S',tz = 'GMT'))
     labelData$tempEnd<-as.POSIXct(labelData$endTime,'%Y-%m-%d %H:%M:%S',tz = 'GMT')
