@@ -173,9 +173,9 @@ extractLabelsSingleFile = function(all_bouts,identifier, winSize,instanceLabelDi
     while (TRUE) {
       if ((timestamp >= boutstart) & (timestamp + winSize <= boutstop)) {
         # the window is within this bout - add the label
-        if(class(labelData)=="data.frame"){
+        if(class(bouts)=="data.frame"){
         label = sub(" ", "", str_trim(bouts[r, c('behavior')]))
-        } else if (class(labelData)[1]=="data.table"){
+        } else if (class(bouts)[1]=="data.table"){
           label = sub(" ", "", str_trim(bouts[r, c('behavior'),with=FALSE]))
         }
       } else if (timestamp + winSize > boutstop) {
@@ -194,9 +194,9 @@ extractLabelsSingleFile = function(all_bouts,identifier, winSize,instanceLabelDi
         if (timestamp >= boutstart) {
           # the window is within this bout - add the label
           
-          if(class(labelData)=="data.frame"){
+          if(class(bouts)=="data.frame"){
             label = sub(" ", "", str_trim(bouts[r, c('behavior')]))
-          } else if (class(labelData)[1]=="data.table"){
+          } else if (class(bouts)[1]=="data.table"){
             label = sub(" ", "", str_trim(bouts[r, c('behavior'),with=FALSE]))
           }
         }
