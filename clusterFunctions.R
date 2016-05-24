@@ -77,7 +77,7 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     #now we need to turn from bout level labels to annotations. Here we use a slightly modified TLBC function, annotationsToLabels
     extractLabelsSingleFile(labelData, identifier= participantID,winSize = 5,instanceLabelDirectory = instanceLabelDirectory)
     
-    instanceLabelData<-fread(file.path(instanceLabelDirectory, paste0(identifiers[id],'ALL.csv')))
+    instanceLabelData<-fread(file.path(instanceLabelDirectory, paste0(participantID,'ALL.csv')))
     
     print(paste0('Writing ALL feature data file ', participantID,'.csv'))
     write.csv(x=labelledFeatureData,file=paste0(outputDataDirectory,'/', participantID,'ALLFeature.csv'),row.names=FALSE)
