@@ -173,7 +173,11 @@ extractLabelsSingleFile = function(all_bouts,identifier, winSize,instanceLabelDi
     while (TRUE) {
       if ((timestamp >= boutstart) & (timestamp + winSize <= boutstop)) {
         # the window is within this bout - add the label
-        label = sub(" ", "", str_trim(bouts[r, c('behavior'),with=FALSE]))
+        if(class(labelData)=="data.frame"){
+        label = sub(" ", "", str_trim(bouts[r, c('behavior')]))
+        } else if (class(labelData)[1]=="data.table"){
+          label = sub(" ", "", str_trim(bouts[r, c('behavior'),with=FALSE]))
+        }
       } else if (timestamp + winSize > boutstop) {
         # move on to the next bout
         if (r == nrow(bouts)) {
