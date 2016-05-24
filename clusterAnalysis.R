@@ -18,9 +18,10 @@ labelDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/label-data/label-dictionary-
 instanceLabelDirectory<-'/data/dph-ukbaccworkgroup/magd4534/label-data/instance-label-dictionary-9-classes'
 outputDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/capture-processed'
 
-#dataDirectory<-'/Users/Matthew/Documents/Oxford/Activity/FeatureData'
-#labelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/LabelData'
-#instanceLabelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/InstanceLabelData'
+dataDirectory<-'/Users/Matthew/Documents/Oxford/Activity/FeatureData'
+labelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/LabelData'
+instanceLabelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/InstanceLabelData'
+outputDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/capture-processed'
 
 
 #Directories for RF and HMM models
@@ -63,7 +64,7 @@ InstanceData<-list()
 FeatureData<-list()
 
 #Now load up Instance data and Feature Data
-dropvals<-c(4,5)
+dropvals<-c(4)
 
 Data<-lapply(X = jointFiles,FUN = function(x) cleanData(jointFiles = x,
                                                         drop=dropvals,

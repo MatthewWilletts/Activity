@@ -12,23 +12,31 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     
     labelData$NewStart<-(as.POSIXct(labelData$startTime,'%Y-%m-%d %H:%M:%S',tz = 'GMT'))
     labelData$tempEnd<-as.POSIXct(labelData$endTime,'%Y-%m-%d %H:%M:%S',tz = 'GMT')
+    
     labelData$duration<-labelData$tempEnd-labelData$NewStart
     if(sum(labelData$duration==0)>0){
       labelData<-labelData[-(labelData$duration==0),]
     }
     labelData$NewEnd<-labelData$tempEnd
     
+    checklabelData(labelData = labelData)
+    
     nrows<-nrow(labelData)
     #Now relabel start and end points to lie in the midpoint of unlabelled gaps
+    
     
     labelData$NewEnd[1:nrows-1]<-labelData$NewEnd[1:nrows-1]+floor(labelData$NewStart[2:nrows]-labelData$NewEnd[1:nrows-1])/2
     labelData$NewEnd[nrows]<-labelData$tempEnd[nrows]
     
     labelData$NewStart[2:nrows]<-labelData$NewEnd[1:nrows-1]
     
+
     labelData<-labelData[,c(1,4,5,8),with=FALSE]
     setnames(labelData,c('identifier','behavior','StartDateTime','EndDateTime'))
     
+    labelData$identifier<-participantID
+      
+      
     #Load up Feature Data
     featureData<-fread(file.path(dataDirectory,jointFiles[2]))
     
@@ -113,6 +121,20 @@ round5secs <- function( x,startTime) {
   x$sec <- 5*(x$sec %/% 5) 
   as.POSIXct(x+startSecs)
 } 
+
+checklabelData<-function(labelData, minSeparation=600){
+    #Check that every row of the label data has an end time after the start time 
+    if(sum(labelData$NewEnd<labelData$NewStart)>0){stop( "some epochs end before they begin!" )}
+  
+    #Check the sequence of epochs forms a sequence
+    nrows<-nrow(labelData)
+    if(sum(labelData$NewStart[2:nrows]>labelData$NewEnd[1:nrows-1])){stop( "epochs do not form a sequence" )}
+  
+    #Check that the gaps in between epochs are not too big - default is 10 mins 
+    if(sum(labelData$NewStart[2:nrows]-labelData$NewEnd[1:nrows-1]>minSeparation)>0){stop( "there are large gaps between epochs" )}
+  
+    return(cat(paste0('completed checks for label data from ',labelData$participant[1])))
+}
 
 
 extractLabelsSingleFile = function(all_bouts,identifier, winSize,instanceLabelDirectory) {
