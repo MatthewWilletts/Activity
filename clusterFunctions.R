@@ -8,7 +8,9 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
   
   if(file.exists(file.path(instanceLabelDirectory,jointFiles[4]))==FALSE){
     
-    labelData<-fread(file.path(labelDirectory,jointFiles[1]),drop=dropvals)
+    labelData<-read.csv(file.path(labelDirectory,jointFiles[1]))
+    drops <- c("annotation","source")
+    test<-labelData[ , !(names(labelData) %in% drops)])    
     
     labelData$NewStart<-(as.POSIXct(labelData$startTime,'%Y-%m-%d %H:%M:%S',tz = 'GMT'))
     labelData$tempEnd<-as.POSIXct(labelData$endTime,'%Y-%m-%d %H:%M:%S',tz = 'GMT')
@@ -31,7 +33,7 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     labelData$NewStart[2:nrows]<-labelData$NewEnd[1:nrows-1]
     
 
-    labelData<-labelData[,c(1,4,5,8),with=FALSE]
+    labelData<-labelData[,c('participant','label','NewStart','NewEnd')]
     setnames(labelData,c('identifier','behavior','StartDateTime','EndDateTime'))
     
     labelData$identifier<-participantID
@@ -128,7 +130,7 @@ checklabelData<-function(labelData, minSeparation=600){
   
     #Check the sequence of epochs forms a sequence
     nrows<-nrow(labelData)
-    if(sum(labelData$NewStart[2:nrows]>labelData$NewEnd[1:nrows-1])){stop( "epochs do not form a sequence" )}
+    if(sum(labelData$NewStart[2:nrows]<labelData$NewEnd[1:nrows-1])>0){stop( "epochs do not form a sequence" )}
   
     #Check that the gaps in between epochs are not too big - default is 10 mins 
     if(sum(labelData$NewStart[2:nrows]-labelData$NewEnd[1:nrows-1]>minSeparation)>0){stop( "there are large gaps between epochs" )}
