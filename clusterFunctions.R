@@ -78,10 +78,10 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     instanceLabelData<-fread(file.path(instanceLabelDirectory, participantID,'ALL.csv'))
     
     print(paste0('Writing ALL feature data file ', participantID,'.csv'))
-    write.csv(x=labelledFeatureData,file=paste0(outputDataDirectory,'/', participantID,'ALLFeature.csv'),row.names=FALSE,append = FALSE)
+    write.csv(x=labelledFeatureData,file=paste0(outputDataDirectory,'/', participantID,'ALLFeature.csv'),row.names=FALSE)
     
     print(paste0('Writing ALL FFT data file ', participantID,'.csv'))
-    write.csv(x=labelledFFTData,file=paste0(outputDataDirectory,'/', participantID,'ALLFFT.csv'),row.names=FALSE,append = FALSE)
+    write.csv(x=labelledFFTData,file=paste0(outputDataDirectory,'/', participantID,'ALLFFT.csv'),row.names=FALSE)
 
     
     
@@ -96,13 +96,13 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     }
     
     print(paste0('Writing CLEAN instance data file ', participantID,'.csv'))
-    write.csv(x=instanceLabelData,file=paste0(instanceLabelDirectory,'/', participantID,'Clean.csv'),row.names=FALSE,append = FALSE)
+    write.csv(x=instanceLabelData,file=paste0(instanceLabelDirectory,'/', participantID,'Clean.csv'),row.names=FALSE)
     
     print(paste0('Writing CLEAN feature data file ', participantID,'.csv'))
-    write.csv(x=labelledFeatureData,file=paste0(outputDataDirectory,'/', participantID,'CleanFeature.csv'),row.names=FALSE,append = FALSE)
+    write.csv(x=labelledFeatureData,file=paste0(outputDataDirectory,'/', participantID,'CleanFeature.csv'),row.names=FALSE)
     
     print(paste0('Writing CLEANFFT data file ', participantID,'.csv'))
-    write.csv(x=labelledFFTData,file=paste0(outputDataDirectory,'/', participantID,'CleanFFT.csv'),row.names=FALSE,append = FALSE)
+    write.csv(x=labelledFFTData,file=paste0(outputDataDirectory,'/', participantID,'CleanFFT.csv'),row.names=FALSE)
     
       return(list(instanceLabelData,labelledFeatureData,labelledFFTData))
 
