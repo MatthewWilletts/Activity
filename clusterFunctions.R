@@ -21,7 +21,7 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     }
     labelData$NewEnd<-labelData$tempEnd
     
-    checklabelData(labelData = labelData)
+    checklabelData(checkData = labelData)
     
     nrows<-nrow(labelData)
     #Now relabel start and end points to lie in the midpoint of unlabelled gaps
@@ -77,7 +77,7 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     #now we need to turn from bout level labels to annotations. Here we use a slightly modified TLBC function, annotationsToLabels
     extractLabelsSingleFile(labelData, identifier= participantID,winSize = 5,instanceLabelDirectory = instanceLabelDirectory)
     
-    instanceLabelData<-fread(file.path(instanceLabelDirectory, participantID,'ALL.csv'))
+    instanceLabelData<-fread(file.path(instanceLabelDirectory, paste0(identifiers[id],'ALL.csv')))
     
     print(paste0('Writing ALL feature data file ', participantID,'.csv'))
     write.csv(x=labelledFeatureData,file=paste0(outputDataDirectory,'/', participantID,'ALLFeature.csv'),row.names=FALSE)
@@ -124,18 +124,18 @@ round5secs <- function( x,startTime) {
   as.POSIXct(x+startSecs)
 } 
 
-checklabelData<-function(labelData, minSeparation=600){
+checklabelData<-function(checkData, minSeparation=600){
     #Check that every row of the label data has an end time after the start time 
-    if(sum(labelData$NewEnd<labelData$NewStart)>0){stop( "some epochs end before they begin!" )}
+    if(sum(checkData$NewEnd<checkData$NewStart)>0){stop( "some epochs end before they begin!" )}
   
     #Check the sequence of epochs forms a sequence
-    nrows<-nrow(labelData)
-    if(sum(labelData$NewStart[2:nrows]<labelData$NewEnd[1:nrows-1])>0){stop( "epochs do not form a sequence" )}
+    nrows<-nrow(checkData)
+    if(sum(checkData$NewStart[2:nrows]<checkData$NewEnd[1:nrows-1])>0){stop( "epochs do not form a sequence" )}
   
     #Check that the gaps in between epochs are not too big - default is 10 mins 
-    if(sum(labelData$NewStart[2:nrows]-labelData$NewEnd[1:nrows-1]>minSeparation)>0){stop( "there are large gaps between epochs" )}
+    if(sum(checkData$NewStart[2:nrows]-checkData$NewEnd[1:nrows-1]>minSeparation)>0){stop( "there are large gaps between epochs" )}
   
-    return(cat(paste0('completed checks for label data from ',labelData$participant[1])))
+    return(cat(paste0('completed checks for label data from ',checkData$participant[1])))
 }
 
 
@@ -193,7 +193,12 @@ extractLabelsSingleFile = function(all_bouts,identifier, winSize,instanceLabelDi
         }
         if (timestamp >= boutstart) {
           # the window is within this bout - add the label
-          label = sub(" ", "", str_trim(bouts[r, c('behavior'),with=FALSE]))
+          
+          if(class(labelData)=="data.frame"){
+            label = sub(" ", "", str_trim(bouts[r, c('behavior')]))
+          } else if (class(labelData)[1]=="data.table"){
+            label = sub(" ", "", str_trim(bouts[r, c('behavior'),with=FALSE]))
+          }
         }
       }
       cat(strftime(timestamp, "%Y-%m-%d %H:%M:%S,"), file=out, append=TRUE)
