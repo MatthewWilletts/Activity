@@ -81,13 +81,13 @@ FeatureData<-list()
 #Now load up Instance data and Feature Data
 dropvals<-c(4)
 
-Data<-lapply(X = jointFiles,FUN = function(x) try(cleanData(jointFiles = x,
+Data<-mclapply(X = jointFiles,FUN = function(x) try(cleanData(jointFiles = x,
                                                         drop=dropvals,
                                                         instanceLabelDirectory = instanceLabelDirectory,
                                                         labelDirectory = labelDirectory,
                                                         dataDirectory = dataDirectory,
-                                                        outputDataDirectory=outputDataDirectory)))
-                                                        #,mc.cores = ncores)
+                                                        outputDataDirectory=outputDataDirectory))
+                                                        ,mc.cores = ncores)
 
 #remove errored participants
 deleteParticipants<-(which(sapply(Data,length)==1))
@@ -149,7 +149,7 @@ nodesize=1
 
 
 rf <- foreach(ntree=rep(floor(100/ncores),ncores), .combine=randomForest::combine, .packages='randomForest') %dopar%
-  randomForest(x = AllFeatureData[ix[-iq],],y=behaviorAsFactor[ix[-iq]],
+  randomForest(x = AllFeatureData[ix[-iq],],y=as.factor(AllInstanceData$behavior[ix[-iq]]),
                  ntree=ntree,
                  mtry=mtry,
                  replace=replace,
@@ -229,7 +229,7 @@ kData<-Z %*% ProxTest
 #compare the out-of-sample classification performance of LDA trained on {labels, z}
 #to the original RF trained on {labels, featuredata}, and as a function of k
 
-lda_comparison<-lda(x=t(Z),grouping = behaviorAsFactor[ix[-iq]])
+lda_comparison<-lda(x=t(Z),grouping = as.factor(AllInstanceData$behavior[ix[-iq]]))
 
 
 lda_prediction<-predict(object = lda_comparison,newdata=t(kData),dimen = k)
@@ -246,7 +246,7 @@ lda_RF_confusion_matrix<-confusionMatrix(data =lda_prediction$class,reference = 
 
 AllInstanceData$behavior[-ix]<-NA
 
-labelledInstance<-behaviorAsFactor[ix[-iq]]
+labelledInstance<-as.factor(AllInstanceData$behavior[ix[-iq]])
 
 hmmData<-list()
 hmmData$s<-as.numeric(labelledInstance)
@@ -289,15 +289,17 @@ smoothed<-predict(object = model,newdata = kData,method = 'viterbi')
 
 newLabels<-factor(smoothed$s)
 
-labelCode<-levels(behaviorAsFactor[ix])
+labelCode<-levels(as.factor(AllInstanceData$behavior[ix]))
 
+true_reference<-factor(AllInstanceData$behavior[ix[iq]],levels = labelCode)
+                  
 
 levels(newLabels)<-labelCode
 #newLabels<-as.character(newLabels)
 
 #Calculate Confusion matrix
 
-HMM_confusion_matrix<-confusionMatrix(data =newLabels,reference =  behaviorAsFactor[ix[iq]])
+HMM_confusion_matrix<-confusionMatrix(data =newLabels,reference =  true_reference)
 
 #output LDA and HMM confusion matrices
 
