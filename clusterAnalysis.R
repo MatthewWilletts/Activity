@@ -85,7 +85,7 @@ Data<-mclapply(X = jointFiles,FUN = function(x) try(cleanData(jointFiles = x,
                                                         instanceLabelDirectory = instanceLabelDirectory,
                                                         labelDirectory = labelDirectory,
                                                         dataDirectory = dataDirectory,
-                                                        outputDataDirectory=outputDataDirectory))
+                                                        outputDataDirectory=outputDataDirectory,onlyLoad = TRUE))
                                                         ,mc.cores = ncores)
 
 #remove errored participants

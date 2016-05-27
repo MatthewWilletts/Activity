@@ -1,13 +1,13 @@
 #Function for cleaning up raw bout data to machine-readible format for analysis
 #cleanData <- function(jointFiles=jointFiles,labelDirectory=labelDirectory,dataDirectory=dataDirectory,drop=dropvals,outputLabelDir=outputLabelDir,instanceLabelDirectory=instanceLabelDirectory){
 
-cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outputLabelDir,instanceLabelDirectory,outputDataDirectory){
+cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outputLabelDir,instanceLabelDirectory,outputDataDirectory,onlyLoad=FALSE){
   
   
   participantID<-gsub(jointFiles[4],pattern = ".csv",replacement = '')
   cat(paste0('starting data processing/loading for ', participantID,'\n'))
   
-  if(file.exists(file.path(instanceLabelDirectory,paste0(participantID,'Clean.csv')))==FALSE){
+  if((file.exists(file.path(instanceLabelDirectory,paste0(participantID,'Clean.csv')))==FALSE) & (onlyLoad==FALSE)){
     
     labelData<-read.csv(file.path(labelDirectory,jointFiles[1]))
     keeps <- c('participant','label','startTime','endTime')
