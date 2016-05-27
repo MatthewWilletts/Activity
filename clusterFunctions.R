@@ -309,21 +309,21 @@ computeProximity<-function(nodes1,nodes2,parallel=FALSE,mc.cores=1){
 #   foreach(a=nodes1, .combine='c') %dopar% {
 #     sum(a==b)
 #   }
-
-
-func1 <- 'NumericMatrix mmult1(NumericMatrix a, NumericMatrix b) {
-  int acoln = a.ncol();
-  int bcoln = b.ncol();
-  NumericMatrix out = no_init_matrix(a.nrow(), acoln + bcoln);
-  for (int j = 0; j < acoln + bcoln; j++) {
-    if (j < acoln) {
-      out(_, j) = a(_, j);
-    } else {
-      out(_, j) = b(_, j - acoln);
-    }
-  }
-  return out;
-}'
-
-cppFunction(func1)
-
+# 
+# 
+# func1 <- 'NumericMatrix mmult1(NumericMatrix a, NumericMatrix b) {
+#   int acoln = a.ncol();
+#   int bcoln = b.ncol();
+#   NumericMatrix out = no_init_matrix(a.nrow(), acoln + bcoln);
+#   for (int j = 0; j < acoln + bcoln; j++) {
+#     if (j < acoln) {
+#       out(_, j) = a(_, j);
+#     } else {
+#       out(_, j) = b(_, j - acoln);
+#     }
+#   }
+#   return out;
+# }'
+# 
+# cppFunction(func1)
+# 
