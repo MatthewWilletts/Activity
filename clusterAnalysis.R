@@ -151,7 +151,7 @@ mtry = floor(sqrt(ncol(AllFeatureData[ix,])))
 replace=TRUE
 nodesize=1
 
-
+cat(paste0('training RF for ',participant))
 rf <- foreach(ntree=rep(floor(100/ncores),ncores), .combine=randomForest::combine, .packages='randomForest') %dopar%
   randomForest(x = AllFeatureData[ix[-iq],],y=as.factor(AllInstanceData$behavior[ix[-iq]]),
                  ntree=ntree,
@@ -164,6 +164,8 @@ rf <- foreach(ntree=rep(floor(100/ncores),ncores), .combine=randomForest::combin
 
 
 #1.b we need to know which data point goes to which node of each tree in our training set!
+cat(paste0('extracting training nodes for ',participant))
+    
 training_nodes <- foreach(features=split(AllFeatureData[ix[-iq],],1:ncores),.combine = rbind, .packages='randomForest') %dopar% 
           attr(predict(rf, features, type="prob",
                   norm.votes=TRUE, predict.all=TRUE, proximity=FALSE, nodes=TRUE,oob.prox=TRUE),which='nodes')
@@ -175,12 +177,14 @@ training_nodes<-training_nodes[order(as.numeric(row.names(training_nodes))),]
 #training_nodes matrix has npoints rows and ntree columns
 
 #Proximity matrix is npoints by npoints
-
+cat(paste0('calculating training nodes proximity for ',participant))
+    
 ProxTrain<-computeProximity(nodes1=training_nodes,nodes2=training_nodes,parallel = TRUE,mc.cores = ncores)
 
 
 #2.Output the RF proximity matrix, for all testing data training data - ie for one participant
-
+cat(paste0('extracting testing nodes for ',participant))
+    
 testing_nodes <- foreach(features=split(AllFeatureData[ix[iq],],1:ncores),.combine = rbind, .packages='randomForest') %dopar% 
         attr(predict(rf, features, type="prob",
                norm.votes=TRUE, predict.all=TRUE, proximity=FALSE, nodes=TRUE),which='nodes')
@@ -188,6 +192,7 @@ testing_nodes <- foreach(features=split(AllFeatureData[ix[iq],],1:ncores),.combi
 reordering_indices<-order(as.numeric(row.names(testing_nodes)))
 testing_nodes<-testing_nodes[reordering_indices,]
 
+cat(paste0('extracting RF test predictions for ',participant))
 
 #and also the RF predicitions
 testing_RF_predicitions<-foreach(features=split(AllFeatureData[ix[iq],],1:ncores),.combine = c, .packages='randomForest') %dopar% 
@@ -204,7 +209,8 @@ testing_RF_predicitions<-(testing_RF_predicitions[reordering_indices])
 
 #Proximity matrix is ntestingpoints rows by ntrainingpoints columns
 
-
+cat(paste0('calculating testing nodes proximity for ',participant))
+    
 ProxTest<-computeProximity(nodes1=testing_nodes,nodes2=training_nodes,parallel = TRUE,mc.cores = ncores)
 
 
@@ -212,6 +218,8 @@ ProxTest<-computeProximity(nodes1=testing_nodes,nodes2=training_nodes,parallel =
 #3.Using ideas from spectral clustering, take an eigen(like) spectral decomposition of ProxTrain and project all
 # testing data points into the leading k-components of the decomposition of ProxTrain
 # with k smallish (say 3 or 4 dimensions)
+
+cat(paste0('doing kSpace transform for ',participant))
 
 Diag <- diag(apply(ProxTrain, 1, sum))
 U<-Diag-ProxTrain
@@ -233,6 +241,8 @@ kData<-Z %*% ProxTest
 #compare the out-of-sample classification performance of LDA trained on {labels, z}
 #to the original RF trained on {labels, featuredata}, and as a function of k
 
+cat(paste0('doing LDA for ',participant))
+
 lda_comparison<-lda(x=t(Z),grouping = as.factor(AllInstanceData$behavior[ix[-iq]]))
 
 
@@ -246,6 +256,7 @@ lda_RF_confusion_matrix<-confusionMatrix(data =lda_prediction$class,reference = 
 #4.run an HMM with gaussian emission probs for the projected points in the k-space
 
 ####learn the HMM using the labelled and unlabelled data in the k-space
+cat(paste0('doing HMM for ',participant))
 
 
 AllInstanceData$behavior[-ix]<-NA
@@ -288,6 +299,7 @@ save(model,rf, file = file.path(resultsDataDirectory,paste0(participant,'HMMandR
 #output<-hmmfit(x = hmmData,start.val = model,mstep=mstep.mvnorm,lock.transition=FALSE,tol=1e-08,maxit=1000)
 
 #train <- simulate(model,  nsim=100, seed=1234, rand.emis=rmvnorm.hsmm)
+cat(paste0('predicting HMM for ',participant))
 
 smoothed<-predict(object = model,newdata = kData,method = 'viterbi')
 
@@ -311,6 +323,8 @@ LDAperformance[[i]]<-lda_RF_confusion_matrix
 HMMperformance[[i]]<-HMM_confusion_matrix
 
 #write predicitions
+cat(paste0('saving predictions for ',participant))
+
 
 write.csv(x=testing_RF_predicitions,file = file.path(RFoutput,paste0(participant,'RFpred.csv')))
 write.csv(x=newLabels,file = file.path(HMMoutput,paste0(participant,'HMMpred.csv')))
