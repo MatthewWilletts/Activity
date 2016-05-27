@@ -17,7 +17,7 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
 
 ncores<-16
 
-ncores<-2
+#ncores<-2
 
 
 set.seed(100)
@@ -32,11 +32,11 @@ instanceLabelDirectory<-'/data/dph-ukbaccworkgroup/magd4534/label-data/instance-
 outputDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/capture-processed'
 resultsDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/results'
   
-dataDirectory<-'/Users/Matthew/Documents/Oxford/Activity/FeatureData'
-labelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/LabelData'
-instanceLabelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/InstanceLabelData'
-outputDataDirectory<-dataDirectory
-resultsDataDirectory<-outputDataDirectory
+# dataDirectory<-'/Users/Matthew/Documents/Oxford/Activity/FeatureData'
+# labelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/LabelData'
+# instanceLabelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/InstanceLabelData'
+# outputDataDirectory<-dataDirectory
+# resultsDataDirectory<-outputDataDirectory
 
 
 #Directories for RF and HMM models
