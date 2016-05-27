@@ -113,13 +113,18 @@ AllFFTData<-rbindlist(lapply(X = lapply(X=Data,'[[',"labelledData"), '[[',"label
 #ncolFmatrix<-sum(ncol(AllFeatureData[,2:12,with=FALSE]),ncol(AllFFTData[,2:252,with=FALSE]))
 AllFeatureData<-(cbind(AllFeatureData[,2:12,with=FALSE],AllFFTData[,2:251,with=FALSE]))
 
+rm(AllFFTData)
+
 #ncol = ncolFmatrix, byrow = TRUE)
 #AllFeatureData2<-mmult1(as.matrix(AllFeatureData[,2:12,with=FALSE]),as.matrix(AllFFTData[,2:252,with=FALSE]))
 
 #AllInstanceData<-rbindlist(Data %>% map(c("labelledData", "instanceLabelData")))
 
 AllInstanceData<-rbindlist(lapply(X = lapply(X=Data,'[[',"labelledData"), '[[',"instanceLabelData"))
-behaviorAsFactor<-as.factor(AllInstanceData$behavior)
+
+rm(Data)
+
+#behaviorAsFactor<-as.factor(AllInstanceData$behavior)
 
 
 #ReduceInstanceData<-reduceLabels(data=AllInstanceData,labelsToReduce=list(c('gardening','standing'),c('in-vehicle')),overallLabel =c('sitting','driving'))
@@ -309,7 +314,7 @@ HMMperformance[[i]]<-HMM_confusion_matrix
 
 write.csv(x=testing_RF_predicitions,file = file.path(RFoutput,paste0(participant,'RFpred.csv')))
 write.csv(x=newLabels,file = file.path(HMMoutput,paste0(participant,'HMMpred.csv')))
-write.csv(x=behaviorAsFactor[ix[iq]],file = file.path(HMMoutput,paste0(participant,'true.csv')))
+write.csv(x=AllInstanceData$behavior[ix[iq]],file = file.path(HMMoutput,paste0(participant,'true.csv')))
 
 
 }
