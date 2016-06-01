@@ -1,4 +1,4 @@
-#Function for cleaning up raw bout data to machine-readible format for analysis
+  #Function for cleaning up raw bout data to machine-readible format for analysis
 #cleanData <- function(jointFiles=jointFiles,labelDirectory=labelDirectory,dataDirectory=dataDirectory,drop=dropvals,outputLabelDir=outputLabelDir,instanceLabelDirectory=instanceLabelDirectory){
 
 cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outputLabelDir,instanceLabelDirectory,outputDataDirectory,onlyLoad=FALSE){
@@ -280,50 +280,24 @@ computeProximity<-function(nodes1,nodes2,parallel=FALSE,mc.cores=1){
   }
 }
 
+cppFunction('NumericMatrix computeProximityC(NumericMatrix nodes1, NumericMatrix nodes2) {
+  int n1 = nodes1.nrow(), ntrees = nodes1.ncol(), n2= nodes2.nrow();
+            
+            NumericMatrix proximity(n2,n1);
+            
+            
+            for (int i = 0; i < n1; i++) {
+              for (int j = 0; j < n2; j++) {
+                for (int k=0; k<ntrees; k++){
+                  if(nodes1(i,k)==nodes2(j,k)){
+                    proximity(j,i) += 1;
+                  }
+            
+                }
+              }
+            }
+        
+return proximity/ntrees;
+            
+}')
 
-
-# 
-# 
-# P <- rbind(mclapply(
-#   nodes1[,],
-#   function(a){apply(
-#     nodes2,
-#     MARGIN = 1,
-#     function(b) sum(a==b))
-#   }
-#   ,mc.cores = mc.cores
-# ))
-# return(matrix(unlist(P), ncol = length(P[[1]]), byrow = TRUE))
-# 
-# outerFunct <- function(x, cores, funceval){
-#   require(parallel)
-#   mclapply(1:cores, funceval)
-# }
-# 
-# require(doMC)  
-# 
-# registerDoMC(mc.cores)
-# 
-# 
-# P <- foreach(b=nodes2, .combine='cbind') %:%
-#   foreach(a=nodes1, .combine='c') %dopar% {
-#     sum(a==b)
-#   }
-# 
-# 
-# func1 <- 'NumericMatrix mmult1(NumericMatrix a, NumericMatrix b) {
-#   int acoln = a.ncol();
-#   int bcoln = b.ncol();
-#   NumericMatrix out = no_init_matrix(a.nrow(), acoln + bcoln);
-#   for (int j = 0; j < acoln + bcoln; j++) {
-#     if (j < acoln) {
-#       out(_, j) = a(_, j);
-#     } else {
-#       out(_, j) = b(_, j - acoln);
-#     }
-#   }
-#   return out;
-# }'
-# 
-# cppFunction(func1)
-# 
