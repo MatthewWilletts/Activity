@@ -10,6 +10,7 @@ library(stringr)
 library(doMC)
 library(foreach)
 library(MASS)
+library(Rcpp)
 
 source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
 
@@ -162,9 +163,9 @@ rf <- foreach(ntree=rep(floor(100/ncores),ncores), .combine=randomForest::combin
                  mtry=mtry,
                  replace=replace,
                  nodesize=nodesize,
-                 importance=TRUE,
+                 importance=FALSE,
                  proximity = FALSE,
-                 do.trace = TRUE)
+                 do.trace = 10)
 
 
 #1.b we need to know which data point goes to which node of each tree in our training set!

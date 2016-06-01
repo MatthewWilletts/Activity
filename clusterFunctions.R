@@ -280,6 +280,8 @@ computeProximity<-function(nodes1,nodes2,parallel=FALSE,mc.cores=1){
   }
 }
 
+#C++ version of computeProximity - faster and better
+
 cppFunction('NumericMatrix computeProximityC(NumericMatrix nodes1, NumericMatrix nodes2) {
   int n1 = nodes1.nrow(), ntrees = nodes1.ncol(), n2= nodes2.nrow();
             
@@ -290,14 +292,49 @@ cppFunction('NumericMatrix computeProximityC(NumericMatrix nodes1, NumericMatrix
               for (int j = 0; j < n2; j++) {
                 for (int k=0; k<ntrees; k++){
                   if(nodes1(i,k)==nodes2(j,k)){
-                    proximity(j,i) += 1;
+                    proximity(j,i) += 1.0/ntrees;
                   }
             
                 }
               }
             }
         
-return proximity/ntrees;
+return proximity;
             
 }')
 
+
+#Function to roughly split up matrix into chunks
+splitMatrix<-function(data_matrix,nprocs){
+  
+  #divide up matrix into nchunks=ncores chunks
+  chunks<-splitNumber(nrow(data_matrix),nprocs)
+  
+  #attach rownames
+  rownames(data_matrix)<-1:nrow(data_matrix)
+  
+  end_indices<-cumsum(chunks)
+  start_indices<-cumsum(c(1,chunks))
+  
+chunked_matrix<-lapply(X = 1:nprocs,FUN = function(x) data_matrix[start_indices[x]:end_indices[x],])
+
+return(chunked_matrix)
+}
+
+#function to divide a number into chunks
+splitNumber<-function(number,nprocs){
+  
+  remainder_chunk<-number %% nprocs
+  
+  chunk<-number %/% nprocs
+  
+  if(!remainder_chunk==0){
+    large_chunk<-chunk+1
+    
+    chunk_lengths<-c(rep(large_chunk,remainder_chunk),rep(chunk,nprocs-remainder_chunk))
+  } else{
+    chunk_lengths<-c(rep(chunk,nprocs))
+    nchunks<-nprocs
+  }
+  return(chunk_lengths)
+  }
