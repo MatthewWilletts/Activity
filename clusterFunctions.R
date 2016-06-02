@@ -375,7 +375,7 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
   
   lda_comparison<-lda(x=kTrainData,grouping = as.factor(TrainingData[,1]))
   
-  lda_prediction<-predict(object = lda_comparison,newdata=kData,dimen = k)
+  lda_prediction<-predict(object = lda_comparison,newdata=kData,dimen = kval)
   
   reference<-factor(testing_RF_predicitions,levels = levels(lda_prediction$class))
   
@@ -461,9 +461,9 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
   cat(paste0('saving predictions \n'))
   
   
-  write.csv(x=lda_prediction,file = file.path(RFoutput,paste0(k,'UCI_LDApred.csv')))
+  write.csv(x=lda_prediction,file = file.path(RFoutput,paste0(kval,'UCI_LDApred.csv')))
   #write.csv(x=newLabels,file = file.path(HMMoutput,'HMMpred.csv'))
-  write.csv(x=LDAperformance,file = file.path(RFoutput,paste0(k,'UCI_LDAaccuracy.csv')))
+  write.csv(x=LDAperformance,file = file.path(RFoutput,paste0(kval,'UCI_LDAaccuracy.csv')))
   
   
   #save(LDAperformance, HMMperformance, file = file.path(resultsDataDirectory,"Results.RData"))
