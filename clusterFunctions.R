@@ -338,3 +338,125 @@ splitNumber<-function(number,nprocs){
   }
   return(chunk_lengths)
   }
+
+
+kSpaceAnalysis<-function(kval,ProxTest,ProxTrain,TrainingData,testing_RF_predicitions,resultsDataDirectory,HMMoutput,RFoutput){
+  
+  Diag <- diag(apply(ProxTrain, 1, sum))
+  U<-Diag-ProxTrain
+  
+  k   <- kval
+  evL <- eigs_sym(U,k+1,which='SM')
+  Z   <- evL$vectors[,1:k]
+  
+  #Z is our projection operator
+  
+  #plot(Z, col=as.factor(AllInstanceData$behavior[ix]), pch=20)
+  
+  
+  #Now project our testing data into K space
+  
+  kData<-t(ProxTest %*% Z)
+  
+  #Intermediate step:
+  #compare the out-of-sample classification performance of LDA trained on {labels, z}
+  #to the original RF trained on {labels, featuredata}, and as a function of k
+  
+  cat(paste0('doing LDA \n'))
+  
+  lda_comparison<-lda(x=Z,grouping = as.factor(TrainingData[,1]))
+  
+  
+  lda_prediction<-predict(object = lda_comparison,newdata=t(kData),dimen = k)
+  
+  reference<-factor(testing_RF_predicitions,levels = levels(lda_prediction$class))
+  
+  lda_RF_confusion_matrix<-confusionMatrix(data =lda_prediction$class,reference = reference)
+  
+  
+  # #4.run an HMM with gaussian emission probs for the projected points in the k-space
+  # 
+  # ####learn the HMM using the labelled and unlabelled data in the k-space
+  # cat(paste0('doing HMM for \n'))
+  # 
+  # 
+  # 
+  # labelledInstance<-as.factor(TrainingData[,1])
+  # 
+  # hmmData<-list()
+  # hmmData$s<-as.numeric(TrainingData[,2:17])
+  # hmmData$x<-t(Z)
+  # hmmData$N<-length(hmmData$s)
+  # class(hmmData)<-"hsmm.data"
+  # 
+  # 
+  # 
+  # 
+  # 
+  # states<-TrainingData[,1]
+  # states<-states[!is.na(states)]
+  # 
+  # 
+  # #calculate empirial transition matrix
+  # statesLength<-length(states)
+  # Trans<-table(states[1:statesLength-1],states[2:statesLength])
+  # Trans <- Trans / rowSums(Trans)
+  # 
+  # labelCode<-levels(as.factor(TrainingData[,1]))
+  # 
+  # mu<-list()
+  # sigma<-list()
+  # for (j in 1:length(labelCode)){
+  #   mu[[j]]<-colMeans(Z[which(TrainingData[,1]==labelCode[j]),])
+  #   sigma[[j]]<-cov(Z[which(TrainingData[,1]==labelCode[j]),])
+  # }
+  # 
+  # B <- list(mu=mu,sigma=sigma)
+  # model <- hmmspec(init=init, trans = Trans, parms.emis = B,dens.emis = dmvnorm.hsmm)
+  # 
+  # save(model,rf, file = file.path(resultsDataDirectory,paste0(participant,'UCI_HMMandRFmodel.R')))
+  # 
+  # ##Now train model
+  # 
+  # #output<-hmmfit(x = hmmData,start.val = model,mstep=mstep.mvnorm,lock.transition=FALSE,tol=1e-08,maxit=1000)
+  # 
+  # #train <- simulate(model,  nsim=100, seed=1234, rand.emis=rmvnorm.hsmm)
+  # cat(paste0('predicting HMM \n'))
+  # 
+  # smoothed<-predict(object = model,newdata = kData,method = 'viterbi')
+  # 
+  # newLabels<-factor(smoothed$s)
+  # 
+  # true_reference<-factor(TestingData[,1],levels = labelCode)
+  # 
+  # 
+  # levels(newLabels)<-labelCode
+  #newLabels<-as.character(newLabels)
+  
+  #Calculate Confusion matrix
+  
+  # HMM_confusion_matrix<-confusionMatrix(data =newLabels,reference =  true_reference)
+  
+  #output LDA and HMM confusion matrices
+  
+  LDAperformance<-lda_RF_confusion_matrix
+  # HMMperformance[[i]]<-HMM_confusion_matrix
+  
+  #write predicitions
+  cat(paste0('saving predictions \n'))
+  
+  
+  write.csv(x=testing_RF_predicitions,file = file.path(RFoutput,paste0(k,'UCI_RFpred.csv')))
+  write.csv(x=lda_prediction,file = file.path(RFoutput,paste0(k,'UCI_LDApred.csv')))
+  #write.csv(x=newLabels,file = file.path(HMMoutput,'HMMpred.csv'))
+  write.csv(x=TestingData[,1],file = file.path(HMMoutput,paste0(k,'UCI_true.csv')))
+  
+  
+  
+  
+  #save(LDAperformance, HMMperformance, file = file.path(resultsDataDirectory,"Results.RData"))
+  
+  return(LDAperformance)
+  
+}
+
