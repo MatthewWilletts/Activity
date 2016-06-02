@@ -239,7 +239,7 @@ TestingData<-Data[16001:20000,]
   
   #output LDA and HMM confusion matrices
   
-  LDAperformance[[i]]<-lda_RF_confusion_matrix
+  LDAperformance<-lda_RF_confusion_matrix
  # HMMperformance[[i]]<-HMM_confusion_matrix
   
   #write predicitions
