@@ -339,41 +339,56 @@ splitNumber<-function(number,nprocs){
   return(chunk_lengths)
   }
 
+calcZ<-function(ProxTrain,Kmax){
+Diag <- diag(apply(ProxTrain, 1, sum))
+U<-Diag-ProxTrain
 
-kSpaceAnalysis<-function(kval,ProxTest,ProxTrain,TrainingData,testing_RF_predicitions,resultsDataDirectory,HMMoutput,RFoutput){
+k   <- Kmax
+evL <- eigs_sym(U,k+1,which='SM')
+Z   <- evL$vectors[,1:k]
+return(Z)
+}
+
+kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predicitions,resultsDataDirectory,HMMoutput,RFoutput){
   
-  Diag <- diag(apply(ProxTrain, 1, sum))
-  U<-Diag-ProxTrain
-  
-  k   <- kval
-  evL <- eigs_sym(U,k+1,which='SM')
-  Z   <- evL$vectors[,1:k]
-  
+
   #Z is our projection operator
   
   #plot(Z, col=as.factor(AllInstanceData$behavior[ix]), pch=20)
   
-  
+  Z_k<-Z[,1:kval]
   #Now project our testing data into K space
   
-  kData<-t(ProxTest %*% Z)
+  kData<-ProxTest %*% Z_k
+  
+  kTrainData<-ProxTrain %*% Z_k
   
   #Intermediate step:
-  #compare the out-of-sample classification performance of LDA trained on {labels, z}
+  #compare the out-of-sample classification performance of LDA trained on {labels,kTrainData}
   #to the original RF trained on {labels, featuredata}, and as a function of k
+  #using a random half of the data, 10 times
   
   cat(paste0('doing LDA \n'))
   
-  lda_comparison<-lda(x=Z,grouping = as.factor(TrainingData[,1]))
+  LDA_accuracy<-c()
   
   
-  lda_prediction<-predict(object = lda_comparison,newdata=t(kData),dimen = k)
+  lda_comparison<-lda(x=kTrainData,grouping = as.factor(TrainingData[,1]))
+  
+  lda_prediction<-predict(object = lda_comparison,newdata=kData,dimen = k)
   
   reference<-factor(testing_RF_predicitions,levels = levels(lda_prediction$class))
   
-  lda_RF_confusion_matrix<-confusionMatrix(data =lda_prediction$class,reference = reference)
+  for(i in 1:10){
+    
+  #take a half subset of data for confusion matrix
+    
+  ix<-sample(nrow(lda_prediction),replace=F,size=floor(0.5*nrow(lda_prediction)))
+
+  lda_RF_confusion_matrix<-confusionMatrix(data =lda_prediction$class[ix],reference = reference[ix])
   
-  
+  LDA_accuracy[i]<-lda_RF_confusion_matrix$overall[1]
+  }
   # #4.run an HMM with gaussian emission probs for the projected points in the k-space
   # 
   # ####learn the HMM using the labelled and unlabelled data in the k-space
@@ -439,19 +454,16 @@ kSpaceAnalysis<-function(kval,ProxTest,ProxTrain,TrainingData,testing_RF_predici
   
   #output LDA and HMM confusion matrices
   
-  LDAperformance<-lda_RF_confusion_matrix
+  LDAperformance<-LDA_accuracy
   # HMMperformance[[i]]<-HMM_confusion_matrix
   
   #write predicitions
   cat(paste0('saving predictions \n'))
   
   
-  write.csv(x=testing_RF_predicitions,file = file.path(RFoutput,paste0(k,'UCI_RFpred.csv')))
   write.csv(x=lda_prediction,file = file.path(RFoutput,paste0(k,'UCI_LDApred.csv')))
   #write.csv(x=newLabels,file = file.path(HMMoutput,'HMMpred.csv'))
-  write.csv(x=TestingData[,1],file = file.path(HMMoutput,paste0(k,'UCI_true.csv')))
-  
-  
+  write.csv(x=LDAperformance,file = file.path(RFoutput,paste0(k,'UCI_LDAaccuracy.csv')))
   
   
   #save(LDAperformance, HMMperformance, file = file.path(resultsDataDirectory,"Results.RData"))

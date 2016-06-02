@@ -143,10 +143,13 @@ TestingData<-Data[16001:20000,]
   
   cat(paste0('doing kSpace transform \n'))
   
-  LDAperformance<-foreach(k=1:10,.combine = list) %dopar% kSpaceAnalysis(
-    kval=k,ProxTest=ProxTest,ProxTrain=ProxTrain,TrainingData=TrainingData,
+  Kmax=32
+  Z<-calcZ(ProxTrain=ProxTrain,Kmax=Kmax)
+    
+  LDAperformance<-foreach(k=1:Kmax,.combine = list) %dopar% kSpaceAnalysis(
+    kval=k,Z=Z,ProxTest=ProxTest,ProxTrain=ProxTrain,TrainingData=TrainingData,
     testing_RF_predicitions=testing_RF_predicitions,resultsDataDirectory=resultsDataDirectory,
     HMMoutput=HMMoutput,RFoutput=RFoutput)
   
 
-    save(LDAperformance, file = file.path(resultsDataDirectory,paste0(k,"Results.RData")))
+    save(LDAperformance, file = file.path(resultsDataDirectory,paste0("UCIResults.RData")))
