@@ -56,7 +56,7 @@ TestingData<-Data[16001:20000,]
   #1.a Run RF using the labelled data points on training data
 
   ntree=1000
-  mtry = floor(sqrt(ncol(AllFeatureData[ix,])))
+  mtry = floor(sqrt(ncol(TrainingData[,2:17])))
   replace=TRUE
   nodesize=1
   
