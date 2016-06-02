@@ -383,7 +383,7 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
     
   #take a half subset of data for confusion matrix
     
-  ix<-sample(nrow(lda_prediction),replace=F,size=floor(0.5*nrow(lda_prediction)))
+  ix<-sample(length(lda_prediction$class),replace=F,size=floor(0.5*length(lda_prediction$class)))
 
   lda_RF_confusion_matrix<-confusionMatrix(data =lda_prediction$class[ix],reference = reference[ix])
   
@@ -462,7 +462,7 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
   
   
   write.csv(x=lda_prediction,file = file.path(RFoutput,paste0(kval,'UCI_LDApred.csv')))
-  #write.csv(x=newLabels,file = file.path(HMMoutput,'HMMpred.csv'))
+#  write.csv(x=newLabels,file = file.path(HMMoutput,'HMMpred.csv'))
   write.csv(x=LDAperformance,file = file.path(RFoutput,paste0(kval,'UCI_LDAaccuracy.csv')))
   
   
