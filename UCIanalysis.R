@@ -49,11 +49,11 @@ Data<-read.csv(file.path(dataDirectory,'letter-recognition.data'),header = FALSE
 TrainingData<-Data[1:16000,]
 TestingData<-Data[16001:20000,]
 
-
-TrainingData<-TrainingData[c(which(TrainingData$V1=='A'),which(TrainingData$V1=='B'),which(TrainingData$V1=='C')),]
-TrainingData$V1<-factor(TrainingData$V1)
-TestingData<-TestingData[c(which(TestingData$V1=='A'),which(TestingData$V1=='B'),which(TestingData$V1=='C')),]
-TestingData$V1<-factor(TestingData$V1)
+# 
+# TrainingData<-TrainingData[c(which(TrainingData$V1=='A'),which(TrainingData$V1=='B'),which(TrainingData$V1=='C')),]
+# TrainingData$V1<-factor(TrainingData$V1)
+# TestingData<-TestingData[c(which(TestingData$V1=='A'),which(TestingData$V1=='B'),which(TestingData$V1=='C')),]
+# TestingData$V1<-factor(TestingData$V1)
 
 # TrainingData<-Data[1:500,]
 # TestingData<-Data[16001:20000,]
