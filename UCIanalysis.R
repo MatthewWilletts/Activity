@@ -155,8 +155,8 @@ TestingData$V1<-factor(TestingData$V1)
   Z_cv<-calcZ(ProxTrain=ProxTrain,Kmax=Kmax,CV = TRUE)
   
   
-  save(Z,file = file = file.path(resultsDataDirectory,paste0("UCI_Z.RData")))
-  save(Z_cv,file = file = file.path(resultsDataDirectory,paste0("UCI_Z_cv.RData")))
+  save(Z,file = file.path(resultsDataDirectory,paste0("UCI_Z.RData")))
+  save(Z_cv,file = file.path(resultsDataDirectory,paste0("UCI_Z_cv.RData")))
   
   
   #load(file='~/Documents/Oxford/Activity/UCI/UCI_Z.RData')
