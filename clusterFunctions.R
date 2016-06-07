@@ -346,10 +346,9 @@ calcZ<-function(ProxTrain,Kmax,CV=TRUE){
   
 if(CV==TRUE){
 ProxTrain<-computeCVmatrix(ProxTrain)
-evL <- eigs(ProxTrain,k+1,which='LM')
-} else {
-evL <- eigs_sym(ProxTrain,k+1,which='LM')
 }
+  
+evL <- eigs_sym(ProxTrain,k+1,which='LM')
   
 Z   <- evL$vectors[,1:k]
   
@@ -373,12 +372,13 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
   #Intermediate step:
   #compare the out-of-sample classification performance of LDA trained on {labels,kTrainData}
   #to the original RF trained on {labels, featuredata}, and as a function of k
-  #using a random half of the data, 10 times
+  #using a random half of the data, 20 times
   
   cat(paste0('doing LDA \n'))
   
   LDA_accuracy<-c()
   
+  cat(paste0(ncol(kTrainData), '\n'))
   
   lda_comparison<-lda(x=kTrainData,grouping = as.factor(TrainingData[,1]))
   
@@ -468,9 +468,9 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
   cat(paste0('saving predictions \n'))
   
   
-  write.csv(x=lda_prediction,file = file.path(RFoutput,paste0(outputPrefix,kval,'UCI_LDApred.csv')))
+#  write.csv(x=lda_prediction,file = file.path(RFoutput,paste0(outputPrefix,kval,'UCI_LDApred.csv')))
 #  write.csv(x=newLabels,file = file.path(HMMoutput,'HMMpred.csv'))
-  write.csv(x=LDAperformance,file = file.path(RFoutput,paste0(outputPrefix,kval,'UCI_LDAaccuracy.csv')))
+#  write.csv(x=LDAperformance,file = file.path(RFoutput,paste0(outputPrefix,kval,'UCI_LDAaccuracy.csv')))
   
   
   #save(LDAperformance, HMMperformance, file = file.path(resultsDataDirectory,"Results.RData"))
@@ -481,6 +481,6 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
 
 computeCVmatrix<-function(Proximity){
   
-cv=0.5*t(t(Proximity-rowSums(Proximity)+mean(Proximity))-colSums(Proximity))
+cv=0.5*t(t(Proximity-rowSums(Proximity)/nrow(Proximity)+mean(Proximity))-colSums(Proximity)/ncol(Proximity))
 return(cv)
 }
