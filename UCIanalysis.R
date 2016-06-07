@@ -49,6 +49,12 @@ Data<-read.csv(file.path(dataDirectory,'letter-recognition.data'),header = FALSE
 TrainingData<-Data[1:16000,]
 TestingData<-Data[16001:20000,]
 
+
+TrainingData<-TrainingData[c(which(TrainingData$V1=='A'),which(TrainingData$V1=='B'),which(TrainingData$V1=='C')),]
+TrainingData$V1<-factor(TrainingData$V1)
+TestingData<-TestingData[c(which(TestingData$V1=='A'),which(TestingData$V1=='B'),which(TestingData$V1=='C')),]
+TestingData$V1<-factor(TestingData$V1)
+
 # TrainingData<-Data[1:500,]
 # TestingData<-Data[16001:20000,]
 # TestingData<-TestingData[1:200,]
@@ -143,13 +149,27 @@ TestingData<-Data[16001:20000,]
   
   cat(paste0('doing kSpace transform \n'))
   
-  Kmax=32
-  Z<-calcZ(ProxTrain=ProxTrain,Kmax=Kmax)
-    
+  Kmax=26
+  
+  Z<-calcZ(ProxTrain=ProxTrain,Kmax=Kmax,CV=FALSE)
+  Z_cv<-calcZ(ProxTrain=ProxTrain,Kmax=Kmax,CV = TRUE)
+  
+  
+  save(Z,file = file = file.path(resultsDataDirectory,paste0("UCI_Z.RData")))
+  save(Z_cv,file = file = file.path(resultsDataDirectory,paste0("UCI_Z_cv.RData")))
+  
+  
+  #load(file='~/Documents/Oxford/Activity/UCI/UCI_Z.RData')
   LDAperformance<-foreach(k=1:Kmax,.combine = list) %dopar% kSpaceAnalysis(
     kval=k,Z=Z,ProxTest=ProxTest,ProxTrain=ProxTrain,TrainingData=TrainingData,
     testing_RF_predicitions=testing_RF_predicitions,resultsDataDirectory=resultsDataDirectory,
-    HMMoutput=HMMoutput,RFoutput=RFoutput)
+    HMMoutput=HMMoutput,RFoutput=RFoutput,outputPrefix = '')
+  
+  LDAperformance_cv<-foreach(k=1:Kmax,.combine = list) %dopar% kSpaceAnalysis(
+    kval=k,Z=Z_cv,ProxTest=ProxTest,ProxTrain=ProxTrain,TrainingData=TrainingData,
+    testing_RF_predicitions=testing_RF_predicitions,resultsDataDirectory=resultsDataDirectory,
+    HMMoutput=HMMoutput,RFoutput=RFoutput,outputPrefix = 'CV')
   
 
     save(LDAperformance, file = file.path(resultsDataDirectory,paste0("UCIResults.RData")))
+    save(LDAperformance_cv, file = file.path(resultsDataDirectory,paste0("UCIResults_cv.RData")))

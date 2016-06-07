@@ -339,17 +339,24 @@ splitNumber<-function(number,nprocs){
   return(chunk_lengths)
   }
 
-calcZ<-function(ProxTrain,Kmax){
-Diag <- diag(apply(ProxTrain, 1, sum))
-U<-Diag-ProxTrain
-
-k   <- Kmax
-evL <- eigs_sym(U,k+1,which='SM')
+calcZ<-function(ProxTrain,Kmax,CV=TRUE){
+#Diag <- diag(apply(ProxTrain, 1, sum))
+#U<-Diag-ProxTrain
+  k   <- Kmax
+  
+if(CV==TRUE){
+ProxTrain<-computeCVmatrix(ProxTrain)
+evL <- eigs(ProxTrain,k+1,which='LM')
+} else {
+evL <- eigs_sym(ProxTrain,k+1,which='LM')
+}
+  
 Z   <- evL$vectors[,1:k]
+  
 return(Z)
 }
 
-kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predicitions,resultsDataDirectory,HMMoutput,RFoutput){
+kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predicitions,resultsDataDirectory,HMMoutput,RFoutput,outputPrefix){
   
 
   #Z is our projection operator
@@ -379,7 +386,7 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
   
   reference<-factor(testing_RF_predicitions,levels = levels(lda_prediction$class))
   
-  for(i in 1:10){
+  for(i in 1:20){
     
   #take a half subset of data for confusion matrix
     
@@ -461,9 +468,9 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
   cat(paste0('saving predictions \n'))
   
   
-  write.csv(x=lda_prediction,file = file.path(RFoutput,paste0(kval,'UCI_LDApred.csv')))
+  write.csv(x=lda_prediction,file = file.path(RFoutput,paste0(outputPrefix,kval,'UCI_LDApred.csv')))
 #  write.csv(x=newLabels,file = file.path(HMMoutput,'HMMpred.csv'))
-  write.csv(x=LDAperformance,file = file.path(RFoutput,paste0(kval,'UCI_LDAaccuracy.csv')))
+  write.csv(x=LDAperformance,file = file.path(RFoutput,paste0(outputPrefix,kval,'UCI_LDAaccuracy.csv')))
   
   
   #save(LDAperformance, HMMperformance, file = file.path(resultsDataDirectory,"Results.RData"))
@@ -472,3 +479,8 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
   
 }
 
+computeCVmatrix<-function(Proximity){
+  
+cv=0.5*t(t(Proximity-rowSums(Proximity)+mean(Proximity))-colSums(Proximity))
+return(cv)
+}
