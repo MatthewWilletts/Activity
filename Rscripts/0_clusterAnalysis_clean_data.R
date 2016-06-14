@@ -13,7 +13,7 @@ ncores<-16
 #ncores<-2
 
 
-set.seed(100)
+set.seed(1)
 
 registerDoMC(ncores)
 
