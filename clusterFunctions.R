@@ -339,6 +339,30 @@ splitNumber<-function(number,nprocs){
   return(chunk_lengths)
   }
 
+
+#Function to roughly split up matrix into chunks
+chunkOfMatrix<-function(data_matrix,nchunks,chunkID){
+  
+  #divide up matrix into nchunks chunks
+  chunks<-splitNumber(nrow(data_matrix),nchunks)
+  
+  #attach rownames
+  rownames(data_matrix)<-1:nrow(data_matrix)
+  
+  end_indices<-cumsum(chunks)
+  start_indices<-cumsum(c(1,chunks))
+  
+  if(chunkID<=nchunks){
+  chunk_of_matrix<-data_matrix[start_indices[chunkID]:end_indices[chunkID],]
+  
+  return(chunk_of_matrix)
+  } else {
+    cat('chunkID must be smaller than or equal to nchunks')
+  }
+  
+}
+
+
 calcZ<-function(ProxTrain,Kmax,CV=TRUE){
 #Diag <- diag(apply(ProxTrain, 1, sum))
 #U<-Diag-ProxTrain
@@ -644,7 +668,7 @@ RF_nodes_chunk<-function(TrainingData,TestingData,ncores,ntree,savefileloc,chunk
   
   #1.a Run RF using the labelled data points on training data
   
-  mtry = floor(sqrt(ncol(TrainingData[,2:ncol(TrainingData)])))
+  mtry = floor(sqrt(ncol(TrainingData)-1))
   replace=TRUE
   nodesize=1
   

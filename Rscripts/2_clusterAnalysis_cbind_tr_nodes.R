@@ -1,5 +1,3 @@
-#MultiCore analysis on ARCUS B cluster of 120 or so participants labelled data, using the Holmes Algorithm
-
 library(optparse)
 library(randomForest)
 library(data.table)
@@ -19,7 +17,7 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
 
 
 #Take in arguements from command line
-#This script will calculate one chunk of the training_node matrix for ntree/nchunks rf trees
+#This script will combine the chunks of the training_node matrix
 
 #So we need to know:
 #a) how many chunks job is divided into
@@ -65,7 +63,7 @@ labelDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/label-data/label-dictionary-
 instanceLabelDirectory<-'/data/dph-ukbaccworkgroup/magd4534/label-data/instance-label-dictionary-9-classes'
 outputDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/capture-processed'
 resultsDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/results'
-  
+
 # dataDirectory<-'/Users/Matthew/Documents/Oxford/Activity/FeatureData'
 # labelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/LabelData'
 # instanceLabelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/InstanceLabelData'
@@ -73,21 +71,18 @@ resultsDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/results'
 # resultsDataDirectory<-outputDataDirectory
 
 
-#Directories for RF and HMM models
+#Directories for RF
 RFoutput<-paste0(resultsDataDirectory,'/RFoutput')
 
-
-#load data
-AllData<-fread(input = file.path(outputDataDirectory,'AllData.csv'))
 
 #write participants
 load(file =file.path(resultsDataDirectory,'participants.RData'))
 
 
-iq<-which(AllData$identifier==participants[leave_out])
-
-#now only analyse ntree/chunk of data - using splitnumber
-ntree_for_chunk<-splitNumber(ntrees,nchunks)[chunkID]
+listOfRFFiles<-list.files(RFoutput,pattern = "^RF_.*[.]RData$")
+listOfTrainindNodeFiles<-list.files(RFoutput,pattern = "^training_nodes_.*[.]csv$")
 
 
-RFoutput<-RF_nodes_chunk(TrainingData=AllData[-iq,],TestingData=AllData[iq,],ncores=ncores,ntree=ntree_for_chunk,savefileloc=RFoutput,chunkID=chunkID,nametoken =participants[leave_out] )
+training_nodes<-cbind_node_files(list_of_node_files=listOfTrainindNodeFiles,directory=RFoutput)
+
+write.csv(x = training_nodes,file =file.path(RFoutput,paste0('training_nodes_',participants[leave_out],'.csv'),row.names = FALSE) )

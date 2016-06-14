@@ -113,7 +113,7 @@ AllFFTData<-rbindlist(lapply(X = lapply(X=Data,'[[',"labelledData"), '[[',"label
 AllInstanceData<-rbindlist(lapply(X = lapply(X=Data,'[[',"labelledData"), '[[',"instanceLabelData"))
 
 
-AllData<-(cbind(AllInstanceData$behavior,AllFeatureData[,2:12,with=FALSE],AllFFTData[,2:251,with=FALSE]))
+AllData<-(cbind(AllInstanceData[,1:3,with=FALSE],AllFeatureData[,2:12,with=FALSE],AllFFTData[,2:251,with=FALSE]))
 
 rm(AllFFTData)
 rm(AllInstanceData)
