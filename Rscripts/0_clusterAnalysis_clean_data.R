@@ -125,7 +125,7 @@ rm(Data)
 AllData<-AllData[which(!AllData$behavior=='unknown'),]
 
 #Create testing data - leave one out
-participants<-apply(X = jointInstanceFiles[-deleteParticipants], function (x) gsub(pattern = '.csv',replacement = '',x = x))
+participants<-sapply(X = jointInstanceFiles[-deleteParticipants], function (x) gsub(pattern = '.csv',replacement = '',x = x))
 
 
 #write data
