@@ -355,7 +355,7 @@ Z   <- evL$vectors[,1:k]
 return(Z)
 }
 
-kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predicitions,resultsDataDirectory,HMMoutput,RFoutput,outputPrefix){
+kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predicitions){
   
 
   #Z is our projection operator
@@ -377,6 +377,7 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
   cat(paste0('doing LDA \n'))
   
   LDA_accuracy<-c()
+  kMeans_accuracy<-c()
   
   cat(paste0(ncol(kTrainData), '\n'))
   
@@ -391,7 +392,8 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
   #take a half subset of data for confusion matrix
     
   ix<-sample(length(lda_prediction$class),replace=F,size=floor(0.5*length(lda_prediction$class)))
-
+ 
+  
   lda_RF_confusion_matrix<-confusionMatrix(data =lda_prediction$class[ix],reference = reference[ix])
   
   LDA_accuracy[i]<-lda_RF_confusion_matrix$overall[1]
@@ -480,7 +482,232 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
 }
 
 computeCVmatrix<-function(Proximity){
-  
-cv=0.5*t(t(Proximity-rowSums(Proximity)/nrow(Proximity)+mean(Proximity))-colSums(Proximity)/ncol(Proximity))
-return(cv)
+  rowsum<-rowSums(Proximity)
+  rowsum<-rowsum/length(rowsum)
+  colsum<-colSums(Proximity)
+  colsum<-colsum/length(colsum)
+cv=0.5*t(t(Proximity-rowsum+mean(Proximity))-colsum)
+return(cv) 
 }
+
+
+RFProxLDA<-function(TrainingData,TestingData,Kmax=40,ncores,ntree){
+
+  
+  #1.a Run RF using the labelled data points on training data
+
+mtry = floor(sqrt(ncol(TrainingData[,2:ncol(TrainingData)])))
+replace=TRUE
+nodesize=1
+
+cat(paste0('training RF\n'))
+
+cat(paste0('nrow for training data is ',nrow(TrainingData),'\n'))
+cat(paste0('size of features for training data is ',object.size(TrainingData),'\n'))
+
+rf <- foreach(ntree=splitNumber(ntree,nprocs = ncores ), .combine=randomForest::combine, .multicombine=TRUE, .packages='randomForest') %dopar%
+  randomForest(x = TrainingData[,2:ncol(TrainingData)],y=as.factor(TrainingData[,1]),
+               ntree=ntree,
+               mtry=mtry,
+               replace=replace,
+               nodesize=nodesize,
+               importance=FALSE,
+               proximity = FALSE,
+               do.trace = 100)
+
+
+#1.b we need to know which data point goes to which node of each tree in our training set!
+cat(paste0('extracting training nodes \n'))
+
+training_nodes <- foreach(features=splitMatrix(TrainingData[,2:ncol(TrainingData)],nprocs = ncores),.combine = rbind, .packages='randomForest') %dopar% 
+  attr(predict(rf, features, type="prob",
+               norm.votes=TRUE, predict.all=TRUE, proximity=FALSE, nodes=TRUE,oob.prox=TRUE),which='nodes')
+
+training_nodes<-training_nodes[order(as.numeric(rownames(training_nodes))),]
+
+
+#Challenge - create proximity matrix from node locations
+
+#training_nodes matrix has npoints rows and ntree columns
+
+#2.Output the RF proximity matrix, for all testing data training data - ie for one participant
+
+#Proximity matrix is npoints by npoints
+cat(paste0('calculating training nodes proximity \n'))
+
+ProxTrain <- foreach(splitTraining=splitMatrix(training_nodes,nprocs = ncores), .combine = rbind) %dopar% matrix(
+  computeProximityC(nodes1=training_nodes,nodes2=splitTraining),
+  nrow=nrow(splitTraining),dimnames=list(rownames(splitTraining)))
+
+ProxTrain<-ProxTrain[order(as.numeric(rownames(ProxTrain))),]
+
+
+#2.b we need to know which data point goes to which node of each tree in our testing set!
+
+cat(paste0('extracting testing nodes \n'))
+
+
+
+
+testing_nodes <- foreach(features=splitMatrix(TestingData,nprocs = ncores),.combine = rbind, .packages='randomForest') %dopar% attr(
+  predict(rf, features, type="prob",norm.votes=TRUE, predict.all=TRUE,
+          proximity=FALSE, nodes=TRUE),which='nodes')
+
+reordering_indices<-order(as.numeric(row.names(testing_nodes)))
+testing_nodes<-testing_nodes[reordering_indices,]
+
+cat(paste0('extracting RF test predictions \n'))
+
+#and also the RF predicitions
+testing_RF_predicitions<-foreach(features=splitMatrix(TestingData[,2:ncol(TestingData)],nprocs = ncores),.combine = c, .packages='randomForest') %dopar% 
+  as.character(predict(rf, features, type="response",
+                       norm.votes=TRUE, predict.all=TRUE, proximity=FALSE, nodes=FALSE)$aggregate,names)
+
+
+testing_RF_predicitions<-(testing_RF_predicitions[reordering_indices])
+
+
+#Challenge - create proximity matrix from node locations of overlap between Training data and Testing Data
+
+#testing_nodes matrix has ntraingpoints rows and ntree columns
+
+#Proximity matrix is ntestingpoints rows by ntrainingpoints columns
+
+cat(paste0('calculating testing nodes proximity \n'))
+
+ProxTest <- foreach(splitTesting=splitMatrix(testing_nodes,nprocs = ncores),.combine = rbind) %dopar% matrix(
+  computeProximityC(nodes1=training_nodes,nodes2=splitTesting[,1:ntree]),
+  nrow=nrow(splitTesting),dimnames=list(rownames(splitTesting)))
+
+ProxTest<-ProxTest[order(as.numeric(rownames(ProxTest))),]
+
+
+#3.Using ideas from spectral clustering, take an eigen(like) spectral decomposition of ProxTrain and project all
+# testing data points into the leading k-components of the decomposition of ProxTrain
+# with k smallish (say 3 or 4 dimensions)
+
+
+cat(paste0('doing kSpace transform \n'))
+
+
+Z<-calcZ(ProxTrain=ProxTrain,Kmax=Kmax,CV=FALSE)
+Z_cv<-calcZ(ProxTrain=ProxTrain,Kmax=Kmax,CV = TRUE)
+
+
+#save(Z,file = file.path(resultsDataDirectory,paste0("UCI_Z.RData")))
+#save(Z_cv,file = file.path(resultsDataDirectory,paste0("UCI_Z_cv.RData")))
+
+
+#load(file='~/Documents/Oxford/Activity/UCI_Z.RData')
+#load(file='~/Documents/Oxford/Activity/UCI_Z_cv.RData')
+
+LDAperformance_output<-foreach(k=1:Kmax,.combine = rbind) %dopar% kSpaceAnalysis(
+  kval=k,Z=Z,ProxTest=ProxTest,ProxTrain=ProxTrain,TrainingData=TrainingData,
+  testing_RF_predicitions=testing_RF_predicitions)
+
+LDAperformance_cv_output<-foreach(k=1:Kmax,.combine = rbind) %dopar% kSpaceAnalysis(
+  kval=k,Z=Z_cv,ProxTest=ProxTest,ProxTrain=ProxTrain,TrainingData=TrainingData,
+  testing_RF_predicitions=testing_RF_predicitions)
+
+return(list(LDAperformance_output=LDAperformance_output,LDAperformance_cv_output=LDAperformance_cv_output,Z=Z,Z_cv=Z_cv,ProxTrain=ProxTrain,ProxTest=ProxTest,testing_RF_predicitions=testing_RF_predicitions))
+
+}
+
+
+
+plotKData<-function(Proxdatamatrix,Zmat,k,xaxis='X1',yaxis='X2',labelData,name,outputdir){
+  kPlotData<-Proxdatamatrix %*% Zmat[,1:k]
+  kPlotData<-data.frame(kPlotData)
+  kPlotData$group<-factor(labelData)
+  kPlotDatamelt <- melt(kPlotData, id.vars = "group")
+  P<-ggplot(kPlotData, aes_string(x=xaxis,y=yaxis))+ geom_point(aes(colour = group), size = 1)+ggtitle(gsub(pattern = '.png',replacement = '',x = name))
+  ggsave(plot = P,filename =file.path(outputdir,name),device = 'png')
+}
+
+
+plot3DkData<-function(datalist,name,groundtruth,outputdir){
+  kSpaceData<-datalist$ProxTrain %*% datalist$Z_cv[,1:3]
+  colorVector<-rep('',times=nrow(kSpaceData))
+  ia<-which(factor(groundtruth)==levels(factor(groundtruth))[1])
+  colorVector[ia]<-'red'
+  colorVector[-ia]<-'blue'
+  png(filename =file.path(outputdir,name),width = 1000,height = 1000)
+  scatterplot3d(kSpaceData, main=gsub(pattern = '3D.png',replacement = '',x = name),color =colorVector, pch = 19)
+  dev.off()
+}
+
+
+
+
+RF_nodes_chunk<-function(TrainingData,TestingData,ncores,ntree,savefileloc,chunkID,nametoken){
+  
+  
+  #1.a Run RF using the labelled data points on training data
+  
+  mtry = floor(sqrt(ncol(TrainingData[,2:ncol(TrainingData)])))
+  replace=TRUE
+  nodesize=1
+  
+  cat(paste0('training RF\n'))
+  
+  cat(paste0('nrow for training data is ',nrow(TrainingData),'\n'))
+  cat(paste0('size of features for training data is ',object.size(TrainingData),'\n'))
+  
+  rf <- foreach(ntree=splitNumber(ntree,nprocs = ncores ), .combine=randomForest::combine, .multicombine=TRUE, .packages='randomForest') %dopar%
+    randomForest(x = TrainingData[,2:ncol(TrainingData)],y=as.factor(TrainingData[,1]),
+                 ntree=ntree,
+                 mtry=mtry,
+                 replace=replace,
+                 nodesize=nodesize,
+                 importance=FALSE,
+                 proximity = FALSE,
+                 do.trace = 100)
+  
+  
+  #2.a we need to know which data point goes to which node of each tree in our training set!
+  cat(paste0('extracting training nodes \n'))
+  
+  training_nodes <- foreach(features=splitMatrix(TrainingData[,2:ncol(TrainingData)],nprocs = ncores),.combine = rbind, .packages='randomForest') %dopar% 
+    attr(predict(rf, features, type="prob",
+                 norm.votes=TRUE, predict.all=TRUE, proximity=FALSE, nodes=TRUE,oob.prox=TRUE),which='nodes')
+  
+  training_nodes<-training_nodes[order(as.numeric(rownames(training_nodes))),]
+  
+  
+
+  #2.b we need to know which data point goes to which node of each tree in our training set!
+  testing_nodes <- foreach(features=splitMatrix(TestingData,nprocs = ncores),.combine = rbind, .packages='randomForest') %dopar% attr(
+    predict(rf, features, type="prob",norm.votes=TRUE, predict.all=TRUE,
+            proximity=FALSE, nodes=TRUE),which='nodes')
+  
+  reordering_indices<-order(as.numeric(row.names(testing_nodes)))
+  testing_nodes<-testing_nodes[reordering_indices,]
+  
+  
+  #3. and also the RF predicitions for the testing set
+  testing_RF_predicitions<-foreach(features=splitMatrix(TestingData[,2:ncol(TestingData)],nprocs = ncores),.combine = c, .packages='randomForest') %dopar% 
+    as.character(predict(rf, features, type="response",
+                         norm.votes=TRUE, predict.all=TRUE, proximity=FALSE, nodes=FALSE)$aggregate,names)
+  
+  
+  testing_RF_predicitions<-(testing_RF_predicitions[reordering_indices])
+  
+  
+  
+  save(rf,file=file.path(savefileloc,paste0('RF_',chunkID,'.RData')))
+  write.csv(x = training_nodes,file=file.path(savefileloc,paste0('training_nodes_',chunkID,'_',nametoken,'.csv')),row.names = FALSE)
+  write.csv(x = testing_nodes,file=file.path(savefileloc,paste0('testing_nodes_',chunkID,'_',nametoken,'.csv')),row.names = FALSE)
+  write.csv(x = testing_RF_predicitions,file=file.path(savefileloc,paste0('testing_RF_predicitons_',chunkID,'_',nametoken,'.csv')),row.names = FALSE)
+  
+         
+  return(cat(paste0('saved files for chunk ',chunkID,' with ',ntree,' trees')))
+}
+
+cbind_node_files<-function(list_of_node_files,directory){
+  
+  all_nodes<-foreach(file=list_of_node_files,.combine = cbind) %dopar% fread(input=file.path(directory,file))
+  
+}
+
+
+  
