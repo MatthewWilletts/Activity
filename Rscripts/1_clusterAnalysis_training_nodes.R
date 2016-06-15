@@ -81,8 +81,8 @@ RFoutput<-paste0(resultsDataDirectory,'/RFoutput')
 AllData<-fread(input = file.path(outputDataDirectory,'AllData.csv'))
 
 #turn into matrix of features and a vector of behaviors
-AllBehaviorData<-c(AllData[,3,with=FALSE])
-AllIdentifierData<-c(AllData[,1,with=FALSE])
+AllBehaviorData<-as.vector(AllData[,behavior])
+AllIdentifierData<-as.vector(AllData[,identifier])
 
 AllData<-as.matrix(AllData[,4:ncol(AllData),with=FALSE])
 
@@ -98,3 +98,14 @@ ntree_for_chunk<-splitNumber(ntrees,nchunks)[chunkID]
 
 
 RFoutput<-RF_nodes_chunk(TrainingFData=AllData[-iq,],TrainingBData=AllBehaviorData[-iq],TestingFData=AllData[iq,],ncores=ncores,ntree=ntree_for_chunk,savefileloc=RFoutput,chunkID=chunkID,nametoken =participants[leave_out] )
+
+
+rf <- foreach(ntree=splitNumber(30,nprocs = 3 ), .combine=randomForest::combine, .multicombine=TRUE, .packages='randomForest') %dopar%
+  randomForest(x = AllDataMatrix,y=as.factor(TrainingBData),
+               ntree=ntree,
+               mtry=mtry,
+               replace=replace,
+               nodesize=nodesize,
+               importance=FALSE,
+               proximity = FALSE,
+               do.trace = 100)
