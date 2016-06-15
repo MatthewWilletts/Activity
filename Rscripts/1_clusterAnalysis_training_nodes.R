@@ -82,6 +82,7 @@ AllData<-fread(input = file.path(outputDataDirectory,'AllData.csv'))
 
 #turn into matrix of features and a vector of behaviors
 AllBehaviorData<-c(AllData[,3,with=FALSE])
+AllIdentifierData<-c(AllData[,1,with=FALSE])
 
 AllData<-as.matrix(AllData[,4:ncol(AllData),with=FALSE])
 
@@ -90,7 +91,7 @@ AllData<-as.matrix(AllData[,4:ncol(AllData),with=FALSE])
 load(file =file.path(resultsDataDirectory,'participants.RData'))
 
 
-iq<-which(AllData$identifier==participants[leave_out])
+iq<-which(AllIdentifierData==participants[leave_out])
 
 #now only analyse ntree/chunk of data - using splitnumber
 ntree_for_chunk<-splitNumber(ntrees,nchunks)[chunkID]
