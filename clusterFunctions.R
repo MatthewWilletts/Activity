@@ -663,22 +663,22 @@ plot3DkData<-function(datalist,name,groundtruth,outputdir){
 
 
 
-RF_nodes_chunk<-function(TrainingData,TestingData,ncores,ntree,savefileloc,chunkID,nametoken){
+RF_nodes_chunk<-function(TrainingFData,TrainingBData,TestingFData,ncores,ntree,savefileloc,chunkID,nametoken){
   
   
   #1.a Run RF using the labelled data points on training data
   
-  mtry = floor(sqrt(ncol(TrainingData)-1))
+  mtry = floor(sqrt(ncol(TrainingFData)-1))
   replace=TRUE
   nodesize=1
   
   cat(paste0('training RF\n'))
   
-  cat(paste0('nrow for training data is ',nrow(TrainingData),'\n'))
-  cat(paste0('size of features for training data is ',object.size(TrainingData),'\n'))
+  cat(paste0('nrow for training data is ',nrow(TrainingFData),'\n'))
+  cat(paste0('size of features for training data is ',object.size(TrainingFData),'\n'))
   
   rf <- foreach(ntree=splitNumber(ntree,nprocs = ncores ), .combine=randomForest::combine, .multicombine=TRUE, .packages='randomForest') %dopar%
-    randomForest(x = TrainingData[,2:ncol(TrainingData)],y=as.factor(TrainingData[,1]),
+    randomForest(x = TrainingFData,y=as.factor(TrainingBData),
                  ntree=ntree,
                  mtry=mtry,
                  replace=replace,
@@ -691,7 +691,7 @@ RF_nodes_chunk<-function(TrainingData,TestingData,ncores,ntree,savefileloc,chunk
   #2.a we need to know which data point goes to which node of each tree in our training set!
   cat(paste0('extracting training nodes \n'))
   
-  training_nodes <- foreach(features=splitMatrix(TrainingData[,2:ncol(TrainingData)],nprocs = ncores),.combine = rbind, .packages='randomForest') %dopar% 
+  training_nodes <- foreach(features=splitMatrix(TrainingFData,nprocs = ncores),.combine = rbind, .packages='randomForest') %dopar% 
     attr(predict(rf, features, type="prob",
                  norm.votes=TRUE, predict.all=TRUE, proximity=FALSE, nodes=TRUE,oob.prox=TRUE),which='nodes')
   
@@ -700,7 +700,7 @@ RF_nodes_chunk<-function(TrainingData,TestingData,ncores,ntree,savefileloc,chunk
   
 
   #2.b we need to know which data point goes to which node of each tree in our training set!
-  testing_nodes <- foreach(features=splitMatrix(TestingData,nprocs = ncores),.combine = rbind, .packages='randomForest') %dopar% attr(
+  testing_nodes <- foreach(features=splitMatrix(TestingFData,nprocs = ncores),.combine = rbind, .packages='randomForest') %dopar% attr(
     predict(rf, features, type="prob",norm.votes=TRUE, predict.all=TRUE,
             proximity=FALSE, nodes=TRUE),which='nodes')
   
@@ -709,7 +709,7 @@ RF_nodes_chunk<-function(TrainingData,TestingData,ncores,ntree,savefileloc,chunk
   
   
   #3. and also the RF predicitions for the testing set
-  testing_RF_predicitions<-foreach(features=splitMatrix(TestingData[,2:ncol(TestingData)],nprocs = ncores),.combine = c, .packages='randomForest') %dopar% 
+  testing_RF_predicitions<-foreach(features=splitMatrix(TestingFData,nprocs = ncores),.combine = c, .packages='randomForest') %dopar% 
     as.character(predict(rf, features, type="response",
                          norm.votes=TRUE, predict.all=TRUE, proximity=FALSE, nodes=FALSE)$aggregate,names)
   

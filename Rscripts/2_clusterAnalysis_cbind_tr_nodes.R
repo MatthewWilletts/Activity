@@ -78,7 +78,7 @@ RFoutput<-paste0(resultsDataDirectory,'/RFoutput')
 #write participants
 load(file =file.path(resultsDataDirectory,'participants.RData'))
 
-
+if(!file.exists(file.path(RFoutput,paste0('training_nodes_',participants[leave_out],'.csv')))){
 listOfRFFiles<-list.files(RFoutput,pattern = "^RF_.*[.]RData$")
 listOfTrainindNodeFiles<-list.files(RFoutput,pattern = "^training_nodes_.*[.]csv$")
 
@@ -86,3 +86,8 @@ listOfTrainindNodeFiles<-list.files(RFoutput,pattern = "^training_nodes_.*[.]csv
 training_nodes<-cbind_node_files(list_of_node_files=listOfTrainindNodeFiles,directory=RFoutput)
 
 write.csv(x = training_nodes,file =file.path(RFoutput,paste0('training_nodes_',participants[leave_out],'.csv'),row.names = FALSE) )
+
+}
+
+
+

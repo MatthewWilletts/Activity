@@ -80,6 +80,12 @@ RFoutput<-paste0(resultsDataDirectory,'/RFoutput')
 #load data
 AllData<-fread(input = file.path(outputDataDirectory,'AllData.csv'))
 
+#turn into matrix of features and a vector of behaviors
+AllBehaviorData<-c(AllData[,3,with=FALSE])
+
+AllData<-as.matrix(AllData[,4:ncol(AllData),with=FALSE])
+
+
 #write participants
 load(file =file.path(resultsDataDirectory,'participants.RData'))
 
@@ -90,4 +96,4 @@ iq<-which(AllData$identifier==participants[leave_out])
 ntree_for_chunk<-splitNumber(ntrees,nchunks)[chunkID]
 
 
-RFoutput<-RF_nodes_chunk(TrainingData=AllData[-iq,],TestingData=AllData[iq,],ncores=ncores,ntree=ntree_for_chunk,savefileloc=RFoutput,chunkID=chunkID,nametoken =participants[leave_out] )
+RFoutput<-RF_nodes_chunk(TrainingFData=AllData[-iq,],TrainingBData=AllBehaviorData[-iq],TestingFData=AllData[iq,],ncores=ncores,ntree=ntree_for_chunk,savefileloc=RFoutput,chunkID=chunkID,nametoken =participants[leave_out] )
