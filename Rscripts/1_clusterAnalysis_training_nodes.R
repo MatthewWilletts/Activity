@@ -98,14 +98,3 @@ ntree_for_chunk<-splitNumber(ntrees,nchunks)[chunkID]
 
 
 RFoutput<-RF_nodes_chunk(TrainingFData=AllData[-iq,],TrainingBData=AllBehaviorData[-iq],TestingFData=AllData[iq,],ncores=ncores,ntree=ntree_for_chunk,savefileloc=RFoutput,chunkID=chunkID,nametoken =participants[leave_out] )
-
-
-rf <- foreach(ntree=splitNumber(30,nprocs = 3 ), .combine=randomForest::combine, .multicombine=TRUE, .packages='randomForest') %dopar%
-  randomForest(x = AllDataMatrix,y=as.factor(TrainingBData),
-               ntree=ntree,
-               mtry=mtry,
-               replace=replace,
-               nodesize=nodesize,
-               importance=FALSE,
-               proximity = FALSE,
-               do.trace = 100)
