@@ -29,9 +29,6 @@ option_list <- list(
   make_option(c("-n", "--nchunks"), type="integer",
               help="number of chunks data is divided into",
               metavar="number"),
-  make_option(c("-c", "--chunk"), type="integer",
-              help="which chunk of data we are analysing",
-              metavar="number"),
   make_option(c("-p", "--participant"), type="integer", default=1,
               help="which participant we are leaving out of analysis",
               metavar="number"),
@@ -44,7 +41,6 @@ opt <- parse_args(OptionParser(option_list=option_list))
 
 nchunks<-opt$nchunks
 
-chunkID<-opt$chunk
 
 leave_out<-opt$participant
 
@@ -56,6 +52,8 @@ set.seed(chunkID)
 
 registerDoMC(ncores)
 
+cat(ntrees)
+cat(nchunks)
 #First, define data directories
 
 dataDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/capture-processed'
