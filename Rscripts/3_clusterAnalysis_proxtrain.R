@@ -77,8 +77,12 @@ load(file =file.path(resultsDataDirectory,'participants.RData'))
 #load data - Training Nodes
 training_nodes_all<-fread(input=file.path(RFoutput,paste0('training_nodes_',participants[leave_out],'.csv')))
 
+training_nodes_matrix<-as.matrix(training_nodes_all)
+
+rm(training_nodes_all)
+
 #now only analyse a chunk of data - using chunkOfMatrix
-training_nodes_part<-chunkOfMatrix(data_matrix = training_nodes_all,nchunks =nchunks,chunkID =  chunkID)
+training_nodes_part<-chunkOfMatrix(data_matrix = training_nodes_matrix,nchunks =nchunks,chunkID =  chunkID)
 
 training_nodes_part_chunked<-splitMatrix(training_nodes_part,nprocs = ncores)
 
