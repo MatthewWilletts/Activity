@@ -690,7 +690,7 @@ RF_nodes_chunk<-function(TrainingFData,TrainingBData,TestingFData,ncores,ntree,s
   
   cat(paste0('saving RF file \n'))
   
-  save(rf,file=file.path(savefileloc,paste0('RF_',chunkID,'.RData')))
+  save(rf,file=file.path(savefileloc,paste0('RF_',chunkID,'_',nametoken,'.RData')))
   
   
   #2.a we need to know which data point goes to which node of each tree in our training set!
