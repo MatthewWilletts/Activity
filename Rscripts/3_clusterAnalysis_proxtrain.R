@@ -93,7 +93,7 @@ rm(training_nodes_part)
 cat(paste0('calculating training nodes proximity \n'))
 
 ProxTrain <- foreach(splitTraining=training_nodes_part_chunked, .combine = rbind) %dopar% matrix(
-  computeProximityC(nodes1=training_nodes_all,nodes2=splitTraining),
+  computeProximityC(nodes1=training_nodes_matrix,nodes2=splitTraining),
   nrow=nrow(splitTraining),dimnames=list(rownames(splitTraining)))
 
 ProxTrain<-ProxTrain[order(as.numeric(rownames(ProxTrain))),]
