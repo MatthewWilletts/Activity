@@ -95,5 +95,8 @@ ProxTrain <- foreach(splitTraining=training_nodes_part_chunked, .combine = rbind
 ProxTrain<-ProxTrain[order(as.numeric(rownames(ProxTrain))),]
 
 
+if(!file.exists(file.path(RFoutput,paste0('ProxTrain_',participants[leave_out],'.csv')))){
+  write.csv(x = ProxTrain,file =file.path(RFoutput,paste0('ProxTrain_',participants[leave_out],'.csv')),row.names = FALSE )
+}
 
 
