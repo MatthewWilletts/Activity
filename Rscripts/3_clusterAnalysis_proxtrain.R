@@ -92,15 +92,22 @@ rm(training_nodes_part)
 #Proximity matrix is npoints by npoints
 cat(paste0('calculating training nodes proximity \n'))
 
+start.time <- Sys.time()
+
 ProxTrain <- foreach(splitTraining=training_nodes_part_chunked, .combine = rbind) %dopar% matrix(
   computeProximityC(nodes1=training_nodes_matrix,nodes2=splitTraining),
   nrow=nrow(splitTraining),dimnames=list(rownames(splitTraining)))
 
 ProxTrain<-ProxTrain[order(as.numeric(rownames(ProxTrain))),]
 
+end.time <- Sys.time()
+
+time.taken <- end.time - start.time
+
+save(time.taken,file = file.path(RFoutput,paste0('ProxTrain_time_',chunkID,'_',participants[leave_out],'.RData')))
 
 if(!file.exists(file.path(RFoutput,paste0('ProxTrain_',participants[leave_out],'.csv')))){
-  write.csv(x = ProxTrain,file =file.path(RFoutput,paste0('ProxTrain_',participants[leave_out],'.csv')),row.names = FALSE )
+  write.csv(x = ProxTrain,file =file.path(RFoutput,paste0('ProxTrain_',chunkID,'_',participants[leave_out],'.csv')),row.names = FALSE )
 }
 
 
