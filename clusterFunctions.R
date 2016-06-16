@@ -706,6 +706,7 @@ RF_nodes_chunk<-function(TrainingFData,TrainingBData,TestingFData,ncores,ntree,s
   
   write.csv(x = training_nodes,file=file.path(savefileloc,paste0('training_nodes_',chunkID,'_',nametoken,'.csv')),row.names = FALSE)
 
+  rm(training_nodes)
   cat(paste0('extracting testing nodes \n'))
   
   #2.b we need to know which data point goes to which node of each tree in our training set!
@@ -719,7 +720,8 @@ RF_nodes_chunk<-function(TrainingFData,TrainingBData,TestingFData,ncores,ntree,s
   cat(paste0('saving testing nodes \n'))
   
   write.csv(x = testing_nodes,file=file.path(savefileloc,paste0('testing_nodes_',chunkID,'_',nametoken,'.csv')),row.names = FALSE)
-
+  rm(testing_nodes)
+  
   
   cat(paste0('extracting RF predictions \n'))
   #3. and also the RF predicitions for the testing set
@@ -729,11 +731,12 @@ RF_nodes_chunk<-function(TrainingFData,TrainingBData,TestingFData,ncores,ntree,s
   
   
   testing_RF_predicitions<-(testing_RF_predicitions[reordering_indices])
-  
+
   
   cat(paste0('saving RF predictions \n'))
   
   write.csv(x = testing_RF_predicitions,file=file.path(savefileloc,paste0('testing_RF_predicitons_',chunkID,'_',nametoken,'.csv')),row.names = FALSE)
+  rm(testing_RF_predicitions)
   
          
   return(cat(paste0('saved files for chunk ',chunkID,' with ',ntree,' trees')))
