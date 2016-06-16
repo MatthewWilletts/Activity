@@ -688,6 +688,11 @@ RF_nodes_chunk<-function(TrainingFData,TrainingBData,TestingFData,ncores,ntree,s
                  do.trace = 100)
   
   
+  cat(paste0('saving RF file \n'))
+  
+  save(rf,file=file.path(savefileloc,paste0('RF_',chunkID,'.RData')))
+  
+  
   #2.a we need to know which data point goes to which node of each tree in our training set!
   cat(paste0('extracting training nodes \n'))
   
@@ -697,8 +702,12 @@ RF_nodes_chunk<-function(TrainingFData,TrainingBData,TestingFData,ncores,ntree,s
   
   training_nodes<-training_nodes[order(as.numeric(rownames(training_nodes))),]
   
+  cat(paste0('saving training nodes \n'))
   
+  write.csv(x = training_nodes,file=file.path(savefileloc,paste0('training_nodes_',chunkID,'_',nametoken,'.csv')),row.names = FALSE)
 
+  cat(paste0('extracting testing nodes \n'))
+  
   #2.b we need to know which data point goes to which node of each tree in our training set!
   testing_nodes <- foreach(features=splitMatrix(TestingFData,nprocs = ncores),.combine = rbind, .packages='randomForest') %dopar% attr(
     predict(rf, features, type="prob",norm.votes=TRUE, predict.all=TRUE,
@@ -707,7 +716,12 @@ RF_nodes_chunk<-function(TrainingFData,TrainingBData,TestingFData,ncores,ntree,s
   reordering_indices<-order(as.numeric(row.names(testing_nodes)))
   testing_nodes<-testing_nodes[reordering_indices,]
   
+  cat(paste0('saving testing nodes \n'))
   
+  write.csv(x = testing_nodes,file=file.path(savefileloc,paste0('testing_nodes_',chunkID,'_',nametoken,'.csv')),row.names = FALSE)
+
+  
+  cat(paste0('extracting RF predictions \n'))
   #3. and also the RF predicitions for the testing set
   testing_RF_predicitions<-foreach(features=splitMatrix(TestingFData,nprocs = ncores),.combine = c, .packages='randomForest') %dopar% 
     as.character(predict(rf, features, type="response",
@@ -717,20 +731,25 @@ RF_nodes_chunk<-function(TrainingFData,TrainingBData,TestingFData,ncores,ntree,s
   testing_RF_predicitions<-(testing_RF_predicitions[reordering_indices])
   
   
+  cat(paste0('saving RF predictions \n'))
   
-  save(rf,file=file.path(savefileloc,paste0('RF_',chunkID,'.RData')))
-  write.csv(x = training_nodes,file=file.path(savefileloc,paste0('training_nodes_',chunkID,'_',nametoken,'.csv')),row.names = FALSE)
-  write.csv(x = testing_nodes,file=file.path(savefileloc,paste0('testing_nodes_',chunkID,'_',nametoken,'.csv')),row.names = FALSE)
   write.csv(x = testing_RF_predicitions,file=file.path(savefileloc,paste0('testing_RF_predicitons_',chunkID,'_',nametoken,'.csv')),row.names = FALSE)
   
          
   return(cat(paste0('saved files for chunk ',chunkID,' with ',ntree,' trees')))
 }
 
-cbind_node_files<-function(list_of_node_files,directory){
+
+
+cbind_node_files<-function(inputDirectory,outputDirectory,startToken){
   
-  all_nodes<-foreach(file=list_of_node_files,.combine = cbind) %dopar% fread(input=file.path(directory,file))
+  listOfNodeFiles<-list.files(inputDirectory,pattern = paste0("^",startToken,".*[.]csv$"))
+  NodeChunkID<-gsub('startToken','',x = listOfNodeFiles)
+  NodeChunkID<-as.numeric(gsub('_.*[.]csv$','',x = NodeChunkID))
   
+  listOfNodeFiles<-listOfNodeFiles[order(NodeChunkID)]
+  
+  all_nodes<-foreach(file=listOfNodeFiles,.combine = cbind) %dopar% fread(input=file.path(outputDirectory,file))
 }
 
 
