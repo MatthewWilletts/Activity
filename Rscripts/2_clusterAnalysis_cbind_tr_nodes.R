@@ -48,7 +48,7 @@ ntrees<-opt$trees
 
 ncores<-16
 
-set.seed(chunkID)
+#set.seed(chunkID)
 
 registerDoMC(ncores)
 
