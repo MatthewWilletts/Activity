@@ -79,7 +79,7 @@ if(!file.exists(file.path(RFoutput,paste0('training_nodes_',participants[leave_o
 
 training_nodes<-cbind_node_files(inputDirectory=RFoutput,outputDirectory=RFoutput,startToken='training_nodes_')
 
-write.csv(x = training_nodes,file =file.path(RFoutput,paste0('training_nodes_',participants[leave_out],'.csv'),row.names = FALSE) )
+write.csv(x = training_nodes,file =file.path(RFoutput,paste0('training_nodes_',participants[leave_out],'.csv')),row.names = FALSE )
 
 }
 
@@ -88,7 +88,7 @@ if(!file.exists(file.path(RFoutput,paste0('testing_nodes_',participants[leave_ou
 
   testing_nodes<-cbind_node_files(inputDirectory=RFoutput,outputDirectory=RFoutput,startToken='testing_nodes_')
   
-  write.csv(x = testing_nodes,file =file.path(RFoutput,paste0('testing_nodes_',participants[leave_out],'.csv'),row.names = FALSE) )
+  write.csv(x = testing_nodes,file =file.path(RFoutput,paste0('testing_nodes_',participants[leave_out],'.csv')),row.names = FALSE )
   
 }
 
