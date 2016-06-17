@@ -304,6 +304,31 @@ return proximity;
 }')
 
 
+#C++ version of computeProximity - faster and better
+
+cppFunction('NumericMatrix computeProximityC_int(NumericMatrix nodes1, NumericMatrix nodes2) {
+      int n1 = nodes1.nrow(), ntrees = nodes1.ncol(), n2= nodes2.nrow();
+            
+            NumericMatrix proximity(n2,n1);
+            
+            
+            for (int i = 0; i < n1; i++) {
+              
+                for (int j = 0; j < n2; j++) {
+            
+                    for (int k=0; k<ntrees; k++){
+            
+                        if(nodes1(i,k)==nodes2(j,k)){
+                        proximity(j,i) += 1;
+                        }
+                    }
+                }
+            }
+            
+            return proximity;
+            
+            }')
+
 #Function to roughly split up matrix into chunks
 splitMatrix<-function(data_matrix,nprocs){
   
