@@ -76,7 +76,7 @@ RFoutput<-paste0(resultsDataDirectory,'/RFoutput')
 load(file =file.path(resultsDataDirectory,'participants.RData'))
 
 
-training_nodes<-cbind_node_files(inputDirectory=RFoutput,outputDirectory=RFoutput,startToken='training_nodes_',leftOutParticipant=participants[leave_out])
+training_nodes<-cbind_node_files(inputDirectory=RFoutput,outputDirectory=RFoutput,startToken='training_nodes_',leftOutParticipant=participants[leave_out],nchunks=nchunks)
 
 cat(paste0('number of rows is ',nrow(training_nodes)))
 cat(paste0('number of cols is ',ncol(training_nodes)))
