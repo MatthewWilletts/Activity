@@ -104,7 +104,10 @@ end.time <- Sys.time()
 
 time.taken <- end.time - start.time
 
+nrow_proxtrain<-nrow(ProxTrain)
+
 save(time.taken,file = file.path(RFoutput,paste0('ProxTrain_time_',chunkID,'_',participants[leave_out],'.RData')))
+save(nrow_proxtrain,file = file.path(RFoutput,paste0('ProxTrain_nrow_',chunkID,'_',participants[leave_out],'.RData')))
 
 if(!file.exists(file.path(RFoutput,paste0('ProxTrain_',participants[leave_out],'.csv')))){
   write.csv(x = ProxTrain,file =file.path(RFoutput,paste0('ProxTrain_',chunkID,'_',participants[leave_out],'.csv')),row.names = FALSE )

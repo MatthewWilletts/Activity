@@ -75,10 +75,14 @@ RFoutput<-paste0(resultsDataDirectory,'/RFoutput')
 #load participants
 load(file =file.path(resultsDataDirectory,'participants.RData'))
 
-if(!file.exists(file.path(RFoutput,paste0('training_nodes_',participants[leave_out],'.csv')))){
 
 training_nodes<-cbind_node_files(inputDirectory=RFoutput,outputDirectory=RFoutput,startToken='training_nodes_')
 
+cat(paste0('number of rows is ',nrow(training_nodes)))
+cat(paste0('number of cols is ',ncol(training_nodes)))
+
+if(!file.exists(file.path(RFoutput,paste0('training_nodes_',participants[leave_out],'.csv')))){
+  
 write.csv(x = training_nodes,file =file.path(RFoutput,paste0('training_nodes_',participants[leave_out],'.csv')),row.names = FALSE )
 
 }
