@@ -775,15 +775,13 @@ RF_nodes_chunk<-function(TrainingFData,TrainingBData,TestingFData,ncores,ntree,s
 
 
 
-cbind_node_files<-function(inputDirectory,outputDirectory,startToken){
+cbind_node_files<-function(inputDirectory,outputDirectory,startToken,leftOutParticipant=participants[leave_out],nchunks){
   
-  listOfNodeFiles<-list.files(inputDirectory,pattern = paste0("^",startToken,".*[.]csv$"))
-  NodeChunkID<-gsub(startToken,'',x = listOfNodeFiles)
-  NodeChunkID<-as.numeric(gsub('_.*[.]csv$','',x = NodeChunkID))
+  chunkids<-1:nchunks
+  listOfNodeFiles<-paste0(startToken,chunkids,'_',leftOutParticipant,'.csv')
+
   
-  listOfNodeFiles<-listOfNodeFiles[order(NodeChunkID)]
-  
-  all_nodes<-foreach(file=listOfNodeFiles,.combine = list,.multicombine = TRUE) %dopar% fread(input=file.path(outputDirectory,file))
+  all_nodes<-foreach(file=listOfNodeFiles,.combine = cbind,.multicombine = TRUE) %dopar% fread(input=file.path(outputDirectory,file))
 }
 
 
