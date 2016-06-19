@@ -78,7 +78,7 @@ NodeOutput<-paste0(RFoutput,'/ProxTrain')
 load(file =file.path(resultsDataDirectory,'participants.RData'))
 
 
-ProxTrain<-cbind_prox_files(inputDirectory=NodeOutput,outputDirectory=NodeOutput,startToken='ProxTrain_',leftOutParticipant=participants[leave_out],nchunks=nchunks)
+ProxTrain<-rbind_prox_files(inputDirectory=NodeOutput,outputDirectory=NodeOutput,startToken='ProxTrain_',leftOutParticipant=participants[leave_out],nchunks=nchunks)
 
 cat(paste0('number of rows is ',nrow(ProxTrain)))
 cat(paste0('number of cols is ',ncol(ProxTrain)))

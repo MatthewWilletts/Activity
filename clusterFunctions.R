@@ -785,13 +785,13 @@ cbind_node_files<-function(inputDirectory,outputDirectory,startToken,leftOutPart
   all_nodes<-foreach(file=listOfNodeFiles,.combine = cbind,.multicombine = TRUE) %dopar% fread(input=file.path(outputDirectory,file))
 }
 
-cbind_prox_files<-function(inputDirectory,outputDirectory,startToken,leftOutParticipant=participants[leave_out],nchunks){
+rbind_prox_files<-function(inputDirectory,outputDirectory,startToken,leftOutParticipant=participants[leave_out],nchunks){
   
   chunkids<-1:nchunks
   listOfFiles<-paste0(startToken,chunkids,'_',leftOutParticipant,'.csv')
   
   
-  all_nodes<-foreach(file=listOfFiles,.combine = rbind,.multicombine = TRUE) %dopar% fread(input=file.path(outputDirectory,file))
+  all_nodes<-foreach(file=listOfFiles,.combine = rbind,.multicombine = TRUE,mc.preschedule=F) %dopar% fread(input=file.path(outputDirectory,file))
 }
 
   
