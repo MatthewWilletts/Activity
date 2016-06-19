@@ -539,6 +539,14 @@ computeCVmatrix<-function(Proximity){
 cv=0.5*t(t(Proximity-rowsum+mean(Proximity))-colsum)
 return(cv) 
 }
+apply(A,2,mean)
+
+computeCVbigmatrix<-function(Proximity){
+  rowmean<-apply(Proximity,1,mean)
+  colmean<-apply(Proximity,2,mean)
+  cv=0.5*t(t(Proximity-rowmean+mean(Proximity))-colmean)
+  return(cv) 
+}
 
 
 RFProxLDA<-function(TrainingData,TestingData,Kmax=40,ncores,ntree){

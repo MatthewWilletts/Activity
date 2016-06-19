@@ -78,7 +78,7 @@ ProxTrain<-read.big.matrix(filename=file.path(ProxOutput,paste0('ProxTrain_',par
                            type = , "integer")
 
 
-CV_proxtrain<-computeCVmatrix(Proximity=ProxTrain)
+CV_proxtrain<-computeCVbigmatrix(Proximity=ProxTrain)
  
 write.big.matrix(x = CV_proxtrain,filename = file.path(ProxOutput,paste0('CV_ProxTrain_',participants[leave_out],'_subsampled.csv')))
 
