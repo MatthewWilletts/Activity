@@ -67,18 +67,18 @@ resultsDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/results'
 
 
 #Directories for RF and HMM models
-RFoutput<-paste0(resultsDataDirectory,'/RFoutput')
+ProxOutput<-paste0(resultsDataDirectory,'/RFoutput/ProxTrain')
 
 #load participants
 load(file =file.path(resultsDataDirectory,'participants.RData'))
 
 #load data - ProxTrain
-ProxTrain<-read.big.matrix(filename=file.path(RFoutput,paste0('ProxTrain_',participants[leave_out],'_subsampled.csv')), sep = ",", header = FALSE, col.names = NULL,
+ProxTrain<-read.big.matrix(filename=file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'_subsampled.csv')), sep = ",", header = FALSE, col.names = NULL,
                            row.names = NULL, has.row.names = FALSE, ignore.row.names = FALSE,
                            type = , "integer")
 
 
 CV_proxtrain<-computeCVmatrix(Proximity=ProxTrain)
  
-write.big.matrix(x = CV_proxtrain,filename = file.path(RFoutput,paste0('CV_ProxTrain_',participants[leave_out],'_subsampled.csv')))
+write.big.matrix(x = CV_proxtrain,filename = file.path(ProxOutput,paste0('CV_ProxTrain_',participants[leave_out],'_subsampled.csv')))
 
