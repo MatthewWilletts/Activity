@@ -791,7 +791,7 @@ rbind_prox_files<-function(inputDirectory,outputDirectory,startToken,leftOutPart
   listOfFiles<-paste0(startToken,chunkids,'_',leftOutParticipant,'.csv')
   
   
-  all_nodes<-foreach(file=listOfFiles,.combine = rbind,.multicombine = TRUE,mc.preschedule=F) %dopar% fread(input=file.path(outputDirectory,file))
+  all_nodes<-foreach(file=listOfFiles,.combine = rbind,.multicombine = TRUE) %dopar% fread(input=file.path(outputDirectory,file))
 }
 
   

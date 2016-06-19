@@ -46,7 +46,7 @@ leave_out<-opt$participant
 
 ntrees<-opt$trees
 
-ncores<-16
+ncores<-4
 
 #set.seed(chunkID)
 
