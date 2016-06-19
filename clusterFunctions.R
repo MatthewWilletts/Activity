@@ -304,9 +304,9 @@ return proximity;
 }')
 
 
-#C++ version of computeProximity - faster and better
+#C++ int version of computeProximity - faster and better
 
-cppFunction('NumericMatrix computeProximityC_int(NumericMatrix nodes1, NumericMatrix nodes2) {
+cppFunction(code = 'NumericMatrix computeProximityC_int(NumericMatrix nodes1, NumericMatrix nodes2) {
       int n1 = nodes1.nrow(), ntrees = nodes1.ncol(), n2= nodes2.nrow();
             
             NumericMatrix proximity(n2,n1);
@@ -328,6 +328,7 @@ cppFunction('NumericMatrix computeProximityC_int(NumericMatrix nodes1, NumericMa
             return proximity;
             
             }')
+
 
 #Function to roughly split up matrix into chunks
 splitMatrix<-function(data_matrix,nprocs){
@@ -784,5 +785,13 @@ cbind_node_files<-function(inputDirectory,outputDirectory,startToken,leftOutPart
   all_nodes<-foreach(file=listOfNodeFiles,.combine = cbind,.multicombine = TRUE) %dopar% fread(input=file.path(outputDirectory,file))
 }
 
+cbind_prox_files<-function(inputDirectory,outputDirectory,startToken,leftOutParticipant=participants[leave_out],nchunks){
+  
+  chunkids<-1:nchunks
+  listOfFiles<-paste0(startToken,chunkids,'_',leftOutParticipant,'.csv')
+  
+  
+  all_nodes<-foreach(file=listOfFiles,.combine = rbind,.multicombine = TRUE) %dopar% fread(input=file.path(outputDirectory,file))
+}
 
   

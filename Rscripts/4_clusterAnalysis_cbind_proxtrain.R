@@ -78,13 +78,13 @@ NodeOutput<-paste0(RFoutput,'/ProxTrain')
 load(file =file.path(resultsDataDirectory,'participants.RData'))
 
 
-ProxTrain<-cbind_node_files(inputDirectory=NodeOutput,outputDirectory=NodeOutput,startToken='ProxTrain_',leftOutParticipant=participants[leave_out],nchunks=nchunks)
+ProxTrain<-cbind_prox_files(inputDirectory=NodeOutput,outputDirectory=NodeOutput,startToken='ProxTrain_',leftOutParticipant=participants[leave_out],nchunks=nchunks)
 
 cat(paste0('number of rows is ',nrow(ProxTrain)))
 cat(paste0('number of cols is ',ncol(ProxTrain)))
 
 if(!file.exists(file.path(RFoutput,paste0('training_nodes_',participants[leave_out],'.csv')))){
   
-  write.csv(x = ProxTrain,file =file.path(NodeOutput,paste0('ProxTrain',participants[leave_out],'.csv')),row.names = FALSE )
+  write.csv(x = ProxTrain,file =file.path(NodeOutput,paste0('ProxTrain_',participants[leave_out],'.csv')),row.names = FALSE )
   
 }
