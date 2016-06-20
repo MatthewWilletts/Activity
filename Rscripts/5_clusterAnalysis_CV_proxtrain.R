@@ -73,12 +73,13 @@ ProxOutput<-paste0(resultsDataDirectory,'/RFoutput/ProxTrain')
 load(file =file.path(resultsDataDirectory,'participants.RData'))
 
 #load data - ProxTrain
-ProxTrain<-read.big.matrix(filename=file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'_subsampled.csv')), sep = ",", header = FALSE, col.names = NULL,
-                           row.names = NULL, has.row.names = FALSE, ignore.row.names = FALSE,
-                           type = , "integer")
-
-
-CV_proxtrain<-computeCVbigmatrix(Proximity=ProxTrain)
+  ProxTrain<-fread(input =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'_subsampled.csv')))
+  
+  ProxTrain_matrix<-as.matrix(ProxTrain)
+  
+  rm(ProxTrain)
+  
+CV_proxtrain<-computeCVmatrix(Proximity=ProxTrain)
  
-write.big.matrix(x = CV_proxtrain,filename = file.path(ProxOutput,paste0('CV_ProxTrain_',participants[leave_out],'_subsampled.csv')))
+write.csv(x = CV_proxtrain,filename = file.path(ProxOutput,paste0('CV_ProxTrain_',participants[leave_out],'_subsampled.csv')),row.names = FALSE)
 
