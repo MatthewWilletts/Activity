@@ -79,7 +79,7 @@ load(file =file.path(resultsDataDirectory,'participants.RData'))
   
   rm(ProxTrain)
   
-CV_proxtrain<-computeCVmatrix(Proximity=ProxTrain)
+CV_proxtrain<-computeCVmatrix(Proximity=ProxTrain_matrix)
  
 write.csv(x = CV_proxtrain,filename = file.path(ProxOutput,paste0('CV_ProxTrain_',participants[leave_out],'_subsampled.csv')),row.names = FALSE)
 
