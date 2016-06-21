@@ -75,11 +75,26 @@ load(file =file.path(resultsDataDirectory,'participants.RData'))
 #load data - ProxTrain
   ProxTrain<-fread(input =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'_subsampled.csv')))
   
-  ProxTrain_matrix<-as.matrix(ProxTrain)
-  
+  ProxTrain_matrix<-as.big.matrix(ProxTrain,type = 'double',backingpath = ProxOutput,backingfile = 'ProxTrainBackingFile')
   rm(ProxTrain)
   
-CV_proxtrain<-computeCVmatrix(Proximity=ProxTrain_matrix)
+  
+rowmeanvalues<-BigRowSums(pBigMat = ProxTrain_matrix@address)
+
+meanvalue<-sum(rowmeanvalues)/(ncol(ProxTrain_matrix)*nrow(ProxTrain_matrix))
+
+rowmeanvalues<-rowmeanvalues/length(rowmeanvalues)
+
+colmeanvalues<-colsum(x = ProxTrain_matrix)
+colmeanvalues<-colmeanvalues/length(rowmeanvalues)
+
+
+CV_matrix<-big.matrix(nrow=nrow(ProxTrain_matrix),ncol = ncol(ProxTrain_matrix),type = 'double',backingpath = ProxOutput,backingfile = 'CVBackingFile') 
+
+CV_proxtrain<-BigCV(pBigMat = ProxTrain_matrix@address,outputBigMat =CV_matrix@address,rowmeanvals =rowmeanvalues,colmeanvals = colmeanvalues, totalmeanval = meanvalue )
  
-write.csv(x = CV_proxtrain,filename = file.path(ProxOutput,paste0('CV_ProxTrain_',participants[leave_out],'_subsampled.csv')),row.names = FALSE)
+write.csv(x =  CV_proxtrain,file  = file.path(ProxOutput,paste0('CV_ProxTrain_',participants[leave_out],'_subsampled.csv')),row.names = FALSE)
+
+
+
 
