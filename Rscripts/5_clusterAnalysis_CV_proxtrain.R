@@ -14,6 +14,9 @@ library(MASS)
 library(Rcpp)
 library(irlba)
 library(bigmemory)
+library(biganalytics)
+library(bigalgebra)
+
 
 #In this script we will be doing 'leave one out' analysis for our participants
 
@@ -73,11 +76,7 @@ ProxOutput<-paste0(resultsDataDirectory,'/RFoutput/ProxTrain')
 load(file =file.path(resultsDataDirectory,'participants.RData'))
 
 #load data - ProxTrain
-  ProxTrain<-fread(input =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'_subsampled.csv')))
-  
-  ProxTrain_matrix<-as.big.matrix(ProxTrain,type = 'double',backingpath = ProxOutput,backingfile = 'ProxTrainBackingFile')
-  rm(ProxTrain)
-  
+ProxTrain_matrix<-read.big.matrix(filename =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'_subsampled.csv')),header = TRUE,type = 'double',backingpath = ProxOutput,backingfile = 'ProxTrainBackingFile')
   
 rowmeanvalues<-BigRowSums(pBigMat = ProxTrain_matrix@address)
 
