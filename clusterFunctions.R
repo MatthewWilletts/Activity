@@ -1205,8 +1205,13 @@ ComputeColSumBigMatrixChunk<-function(Proximity.bigmatrix.descfilepath,nchunks=n
   return(rowsums)
 }
 
+bind_sum_files<-function(inputDirectory,startToken,leftOutParticipant=participants[leave_out],nchunks){
 
+  chunkids<-1:nchunks
+  listOfFiles<-paste0(startToken,'_',leftOutParticipant,'_',chunkids,'_subsampled.csv')
 
+  all_nodes<-foreach(file=listOfNodeFiles,.combine = c,.multicombine = TRUE) %dopar% read.csv(file=file.path(outputDirectory,file))
+}
   
   
-  
+}  

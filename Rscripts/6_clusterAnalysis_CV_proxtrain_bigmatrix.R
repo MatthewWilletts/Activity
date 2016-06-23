@@ -84,9 +84,13 @@ load(file =file.path(resultsDataDirectory,'participants.RData'))
 
 #load mean values
 
-rowmeanvalues<-read.csv(file  = file.path(ProxOutput,paste0('CV_rowmeans_',participants[leave_out],'_subsampled.csv')))
-colmeanvalues<-read.csv(file  = file.path(ProxOutput,paste0('CV_colmeans_',participants[leave_out],'_subsampled.csv')))
-meanvalue<-read.csv(file  = file.path(ProxOutput,paste0('CV_totmean_',participants[leave_out],'_subsampled.csv')))
+rowmeanvalues<-bind_sum_files(inputDirectory =ProxOutput,startToken ='CV_rowsums',leftOutParticipant = participantID[leave_out],nchunks = nchunks)
+colmeanvalues<-bind_sum_files(inputDirectory =ProxOutput,startToken ='CV_colsum',leftOutParticipant = participantID[leave_out],nchunks = nchunks)
+
+meanvalue<-sum(rowmeanvalues)
+rowmeanvalues<-rowmeanvalues/length(colmeanvalues)
+colmeanvalues<-colmeanvalues/length(rowmeanvalues)
+meanvalue<-meanvalue/(length(colmeanvalues)*length(rowmeanvalues))
 
 
 ProxTrainDescriptorFile<-paste0('ProxTrainBackingFile_',participants[leave_out],'.desc')
@@ -97,7 +101,7 @@ CVDescriptorFile<-paste0('CVBackingFile_',participants[leave_out],'.desc')
 #Now calculate CV matrix piecewise
 
 listofEndRows<- foreach(corenumber=1:ncores, .combine = rbind) %dopar% computeCVbigmatrix(
-  Proximity.bigmatrix.descfilepath=file.path(ProxOutput,ProxTrainDescriptorFile),
+  Proximity.bigmatrix.descfilepath=file.path(ProxOutput,ProxTrainDescriptorFile)
   ,CV.bigmatrix.descfilepath =file.path(ProxOutput,CVDescriptorFile)
   ,rowmeanvalues=rowmeanvalues,colmeanvalues = colmeanvalues,meanvalue = meanvalue
   ,nchunks = nchunks,chunkID = chunkID,ncores = ncores,coreID = corenumber)
