@@ -41,7 +41,7 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
       
       
     #Load up Feature Data
-    featureData<-fread(file.path(dataDirectory,jointFiles[2]))
+    featureData<-read.csv(file = file.path(dataDirectory,jointFiles[2]))
     featureData$identifier<-participantID
     
     #delete first data point
