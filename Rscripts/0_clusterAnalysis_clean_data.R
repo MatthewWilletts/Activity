@@ -81,7 +81,6 @@ FeatureData<-list()
 dropvals<-c(4)
 
 Data<-mclapply(X = jointFiles,FUN = function(x) try(cleanData(jointFiles = x,
-                                                              drop=dropvals,
                                                               instanceLabelDirectory = instanceLabelDirectory,
                                                               labelDirectory = labelDirectory,
                                                               dataDirectory = dataDirectory,
@@ -129,9 +128,10 @@ AllData<-AllData[which(!AllData$behavior=='unknown'),]
 #Create testing data - leave one out
 participants<-sapply(X = jointInstanceFiles[-deleteParticipants], function (x) gsub(pattern = '.csv',replacement = '',x = x))
 
-
+cat('writing AllData file')
 #write data
 write.csv(x=AllData,file = file.path(outputDataDirectory,paste0('AllData_',duration,'.csv')))
 
+cat('writing participants')
 #write participants
 save(participants,file =file.path(resultsDataDirectory,'_participants_',duration,'.RData'))

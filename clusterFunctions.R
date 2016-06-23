@@ -1,7 +1,7 @@
   #Function for cleaning up raw bout data to machine-readible format for analysis
-#cleanData <- function(jointFiles=jointFiles,labelDirectory=labelDirectory,dataDirectory=dataDirectory,drop=dropvals,outputLabelDir=outputLabelDir,instanceLabelDirectory=instanceLabelDirectory){
+#cleanData <- function(jointFiles=jointFiles,labelDirectory=labelDirectory,dataDirectory=dataDirectory,outputLabelDir=outputLabelDir,instanceLabelDirectory=instanceLabelDirectory){
 
-cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outputLabelDir,instanceLabelDirectory,outputDataDirectory,onlyLoad=FALSE,FFT=FALSE,duration=30){
+cleanData <- function(jointFiles,labelDirectory,dataDirectory,outputLabelDir,instanceLabelDirectory,outputDataDirectory,onlyLoad=FALSE,FFT=FALSE,duration=30){
   
   
   participantID<-gsub(jointFiles[3],pattern = ".csv",replacement = '')
@@ -46,6 +46,9 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     
     #delete first data point
     featureData<-featureData[-1,]
+    
+    #clean up correlation values
+    featureData<-cleanUpCorr(featureData=featureData)
     
     if(FFT){
     #Load up FFT Data
@@ -268,6 +271,31 @@ return(list(cleanInstanceLabelData=cleanInstanceLabelData,cleanLabelledFeatureDa
 } else {
 return(list(cleanInstanceLabelData=cleanInstanceLabelData,cleanLabelledFeatureData=cleanLabelledFeatureData))
 }
+}
+
+#function to clean up correlation colums that contain � symbol
+cleanUpCorr<-function(featureData){
+  ixy<-which(featureData$corrxy=='�')
+  ixz<-which(featureData$corrxz=='�')
+  iyz<-which(featureData$corryz=='�')
+  
+  #replace with interpolated values
+  if(length(ixy>0)){
+    featureData$corrxy[ixy]<-0.5*(featureData$corrxy[ixy+1]+featureData$corrxy[ixy-1])
+    featureData$corrxy<-as.numeric(as.character(featureData$corrxy))
+  }
+  if(length(ixz>0)){
+    featureData$corrxz[ixz]<-0.5*(featureData$corrxz[ixz+1]+featureData$corrxz[ixz-1])
+    featureData$corrxz<-as.numeric(as.character(featureData$corrxz))
+    
+  }
+  if(length(iyz>0)){
+    featureData$corryz[iyz]<-0.5*(featureData$corryz[iyz+1]+featureData$corryz[iyz-1])
+    featureData$corryz<-as.numeric(as.character(featureData$corryz))
+  }
+  
+  
+ return(featureData)   
 }
 
 
