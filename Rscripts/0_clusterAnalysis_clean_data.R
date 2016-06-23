@@ -17,7 +17,7 @@ set.seed(1)
 
 registerDoMC(ncores)
 
-
+duration=30
 
 source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
 
@@ -27,12 +27,12 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
 
 
 #First, define data directories
-
-dataDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/capture-processed'
+sftp://arcus-b.arc.ox.ac.uk/data/dph-ukbaccworkgroup/phpc0595/data/capture24/epoch5sec/p002ActivityEpoch.csv
+dataDirectory<-'/data/dph-ukbaccworkgroup/phpc0595/data/capture24/epoch5sec'
 labelDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/label-data/label-dictionary-9-classes'
 instanceLabelDirectory<-'/data/dph-ukbaccworkgroup/magd4534/label-data/instance-label-dictionary-9-classes'
-outputDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/capture-processed'
-resultsDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/results'
+outputDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/capture-processed/30sec'
+resultsDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/results/30sec'
 
 # dataDirectory<-'/Users/Matthew/Documents/Oxford/Activity/FeatureData'
 # labelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/LabelData'
@@ -47,7 +47,7 @@ HMMoutput<-paste0(resultsDataDirectory,'/HMMoutput')
 
 
 listOfFeatureFiles<-list.files(dataDirectory,pattern = "\\ActivityEpoch[.]csv$")
-listOfFFTFiles<-list.files(dataDirectory,pattern = "\\ActivityEpoch_fft[.]csv$")
+#listOfFFTFiles<-list.files(dataDirectory,pattern = "\\ActivityEpoch_fft[.]csv$")
 
 listOfLabelFiles<-list.files(labelDirectory,pattern = "\\.csv$")
 
@@ -68,10 +68,11 @@ iFeatures<-match(bothData,featureIdentifiers)
 
 jointLabelFiles<-listOfLabelFiles[iLabels]
 jointFeatureFiles<-listOfFeatureFiles[iFeatures]
-jointFFTFiles<-listOfFFTFiles[iFeatures]
+#jointFFTFiles<-listOfFFTFiles[iFeatures]
 jointInstanceFiles<-gsub(listOfFeatureFiles[iFeatures],pattern = "ActivityEpoch",replacement = '')
 
-jointFiles<-mapply(c, jointLabelFiles, jointFeatureFiles,jointFFTFiles,jointInstanceFiles, SIMPLIFY=FALSE)
+#jointFiles<-mapply(c, jointLabelFiles, jointFeatureFiles,jointFFTFiles,jointInstanceFiles, SIMPLIFY=FALSE)
+jointFiles<-mapply(c, jointLabelFiles, jointFeatureFiles,jointInstanceFiles, SIMPLIFY=FALSE)
 
 
 InstanceData<-list()
@@ -85,7 +86,7 @@ Data<-mclapply(X = jointFiles,FUN = function(x) try(cleanData(jointFiles = x,
                                                               instanceLabelDirectory = instanceLabelDirectory,
                                                               labelDirectory = labelDirectory,
                                                               dataDirectory = dataDirectory,
-                                                              outputDataDirectory=outputDataDirectory,onlyLoad = TRUE))
+                                                              outputDataDirectory=outputDataDirectory,onlyLoad = TRUE,FFT=FALSE,duration=duration))
                ,mc.cores = ncores)
 
 #remove errored participants
@@ -98,24 +99,26 @@ Data[deleteParticipants]<-NULL
 #AllFFTData<-rbindlist(Data %>% map(c("labelledData", "labelledFFTData")))
 
 AllFeatureData<-rbindlist(lapply(X = lapply(X=Data,'[[',"labelledData"), '[[',"labelledFeatureData"))
-AllFeatureData$dataErrors<-NULL
-AllFeatureData$clipsBeforeCalibr<-NULL
-AllFeatureData$clipsAfterCalibr<-NULL
-AllFeatureData$rawSamples<-NULL
-AllFeatureData$samples<-NULL
+# AllFeatureData$dataErrors<-NULL
+# AllFeatureData$clipsBeforeCalibr<-NULL
+# AllFeatureData$clipsAfterCalibr<-NULL
+# AllFeatureData$rawSamples<-NULL
+# AllFeatureData$samples<-NULL
 #AllFeatureData[,2:12,with=FALSE]<-round(AllFeatureData[,2:12,with=FALSE])
 
 
-AllFFTData<-rbindlist(lapply(X = lapply(X=Data,'[[',"labelledData"), '[[',"labelledFFTData"))
+#AllFFTData<-rbindlist(lapply(X = lapply(X=Data,'[[',"labelledData"), '[[',"labelledFFTData"))
 #AllFFTData[,2:251,with=FALSE]<-round(AllFFTData[,2:251,with=FALSE], digits = 4)
 
 
 AllInstanceData<-rbindlist(lapply(X = lapply(X=Data,'[[',"labelledData"), '[[',"instanceLabelData"))
 
 
-AllData<-(cbind(AllInstanceData[,1:3,with=FALSE],AllFeatureData[,2:12,with=FALSE],AllFFTData[,2:251,with=FALSE]))
+#AllData<-(cbind(AllInstanceData[,1:3,with=FALSE],AllFeatureData[,2:12,with=FALSE],AllFFTData[,2:251,with=FALSE]))
+AllData<-(cbind(AllInstanceData[,1:3,with=FALSE],AllFeatureData[,2:ncol(AllFeatureData),with=FALSE]))
 
-rm(AllFFTData)
+
+#rm(AllFFTData)
 rm(AllInstanceData)
 rm(AllFeatureData)
 
@@ -129,7 +132,7 @@ participants<-sapply(X = jointInstanceFiles[-deleteParticipants], function (x) g
 
 
 #write data
-write.csv(x=AllData,file = file.path(outputDataDirectory,'AllData.csv'))
+write.csv(x=AllData,file = file.path(outputDataDirectory,paste0('AllData_',duration,'.csv')))
 
 #write participants
-save(participants,file =file.path(resultsDataDirectory,'participants.RData'))
+save(participants,file =file.path(resultsDataDirectory,'_participants_',duration,'.RData'))
