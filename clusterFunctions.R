@@ -1110,10 +1110,10 @@ sourceCpp(code = '// [[Rcpp::depends(BH)]]
           int scol = scolvect[0];
           int ecol = ecolvect[0];
           int diffcol = ecol-scol;
-          NumericVector colSums(diffrow, 0.0);
+          NumericVector colSums(diffcol, 0.0);
           
           
-          for (int jj = 0; jj < diffrow; jj++) {
+          for (int jj = 0; jj < diffcol; jj++) {
           for (int ii = 0; ii < xpMat->nrow(); ii++) {
           value = mat[jj+scol][ii];
           if (all(!is_na(value))) {
