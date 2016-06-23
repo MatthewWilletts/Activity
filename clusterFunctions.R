@@ -4,10 +4,10 @@
 cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outputLabelDir,instanceLabelDirectory,outputDataDirectory,onlyLoad=FALSE,FFT=FALSE,duration=30){
   
   
-  participantID<-gsub(jointFiles[4],pattern = ".csv",replacement = '')
+  participantID<-gsub(jointFiles[3],pattern = ".csv",replacement = '')
   cat(paste0('starting data processing/loading for ', participantID,'\n'))
   
-  if((file.exists(file.path(instanceLabelDirectory,paste0(participantID,'Clean.csv')))==FALSE) & (onlyLoad==FALSE)){
+  if((file.exists(file.path(instanceLabelDirectory,paste0(participantID,'Clean.csv')))==FALSE) | (onlyLoad==FALSE)){
     
     labelData<-read.csv(file.path(labelDirectory,jointFiles[1]))
     keeps <- c('participant','label','startTime','endTime')
@@ -57,19 +57,19 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     
     
     #remove fractional seconds
-    featureData$Time<-substr(featureData$Time,1,19)
+    featureData$timestamp<-substr(featureData$timestamp,1,19)
 
     
-    start_times<-labelData$StartDateTime[1]+0:4
+    start_times<-labelData$StartDateTime[1]+0:(duration-1)
     
-    end_times<-labelData$EndDateTime[nrows]-0:4
+    end_times<-labelData$EndDateTime[nrows]-0:(duration-1)
     
-    start_row<-pmatch(start_times,featureData$Time,duplicates.ok = TRUE)
+    start_row<-pmatch(start_times,featureData$timestamp,duplicates.ok = TRUE)
     iStart<-which(!is.na(start_row))
     start_row<-start_row[iStart]
     labelData$StartDateTime[1]<-start_times[iStart]
     
-    end_row<-pmatch(end_times,substr(featureData$Time,1,19),duplicates.ok = TRUE)
+    end_row<-pmatch(end_times,substr(featureData$timestamp,1,19),duplicates.ok = TRUE)
     iEnd<-which(!is.na(end_row))
     end_row<-end_row[iEnd]
     labelData$EndDateTime[nrows]<-end_times[iEnd]
@@ -77,8 +77,6 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     labelledData<-list()
     
     #only store data points inside labelled epoch
-    # minus one as extractLabelsSingleFile does not output final data point for labels
-    labelledData$labelledFeatureData<-featureData[start_row:(end_row-1),]
     
     if(FFT){
     labelledData$labelledFFTData<-FFTData[start_row:(end_row-1),]
@@ -89,10 +87,20 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     labelData$EndDateTime<-roundXsecs(labelData$EndDateTime,startTime = labelData$StartDateTime[1],duration = duration)
     
     #now we need to turn from bout level labels to annotations. Here we use a slightly modified TLBC function, annotationsToLabels
-    extractLabelsSingleFile(labelData, identifier= participantID,winSize = 5,instanceLabelDirectory = instanceLabelDirectory)
+    extractLabelsSingleFile(labelData, identifier= participantID,winSize = duration,instanceLabelDirectory = instanceLabelDirectory)
     
     labelledData$instanceLabelData<-fread(file.path(instanceLabelDirectory, paste0(participantID,'ALL.csv')))
     labelledData$instanceLabelData$identifier<-participantID
+    
+    #sometimes have to delete last feature data point  as extractLabelsSingleFile sometimes does not output final data point for labels
+    if(nrow(labelledData$instanceLabelData)==(end_row-start_row)){
+    labelledData$labelledFeatureData<-featureData[start_row:(end_row-1),]
+    } else if (nrow(labelledData$instanceLabelData)==(end_row-start_row+1)){
+    labelledData$labelledFeatureData<-featureData[start_row:end_row,]
+    } else {
+      cat('error - off by one error between labels and features!')
+    }
+    
     
     cat(paste0('Writing ALL feature data file ', participantID,'.csv','\n'))
     write.csv(x=labelledData$labelledFeatureData,file=paste0(outputDataDirectory,'/', participantID,'ALLFeature.csv'),row.names=FALSE)
@@ -103,7 +111,7 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     }
     
     #remove unknown labels at beginning and end of period - this is the 'clean' data
-    cleanData<-removeUnlabelledEnds(data=labelledData)
+    cleanData<-removeUnlabelledEnds(data=labelledData,FFT=FFT)
    
     cat(paste0('Writing CLEAN instance data file ', participantID,'.csv','\n'))
     write.csv(x=cleanData$cleanInstanceLabelData,file=paste0(instanceLabelDirectory,'/', participantID,'Clean.csv'),row.names=FALSE)
@@ -243,7 +251,7 @@ extractLabelsSingleFile = function(all_bouts,identifier, winSize,instanceLabelDi
 }
 
 
-removeUnlabelledEnds<-function(data,unlabelledBehaviorName='unknown'){
+removeUnlabelledEnds<-function(data,unlabelledBehaviorName='unknown',FFT=FALSE){
 
 kx<-which(!data$instanceLabelData$behavior==unlabelledBehaviorName)
 if(length(kx)>0){
@@ -251,9 +259,15 @@ if(length(kx)>0){
   
   cleanInstanceLabelData<-data$instanceLabelData[kx[1]:maxIndex,]
   cleanLabelledFeatureData<-data$labelledFeatureData[kx[1]:maxIndex,]
+  if(FFT){
   cleanLabelledFFTData<-data$labelledFFTData[kx[1]:maxIndex,]
+  }
 }
+if(FFT){
 return(list(cleanInstanceLabelData=cleanInstanceLabelData,cleanLabelledFeatureData=cleanLabelledFeatureData,cleanLabelledFFTData=cleanLabelledFFTData))
+} else {
+return(list(cleanInstanceLabelData=cleanInstanceLabelData,cleanLabelledFeatureData=cleanLabelledFeatureData))
+}
 }
 
 

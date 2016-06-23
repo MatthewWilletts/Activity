@@ -70,7 +70,7 @@ jointFeatureFiles<-listOfFeatureFiles[iFeatures]
 #jointFFTFiles<-listOfFFTFiles[iFeatures]
 jointInstanceFiles<-gsub(listOfFeatureFiles[iFeatures],pattern = "ActivityEpoch",replacement = '')
 
-#jointFiles<-mapply(c, jointLabelFiles, jointFeatureFiles,jointFFTFiles,jointInstanceFiles, SIMPLIFY=FALSE)
+#jointFiles<-mapply(c, jointLabelFiles, jointFeatureFiles,jointInstanceFiles,jointFFTFiles, SIMPLIFY=FALSE)
 jointFiles<-mapply(c, jointLabelFiles, jointFeatureFiles,jointInstanceFiles, SIMPLIFY=FALSE)
 
 
@@ -85,7 +85,7 @@ Data<-mclapply(X = jointFiles,FUN = function(x) try(cleanData(jointFiles = x,
                                                               instanceLabelDirectory = instanceLabelDirectory,
                                                               labelDirectory = labelDirectory,
                                                               dataDirectory = dataDirectory,
-                                                              outputDataDirectory=outputDataDirectory,onlyLoad = TRUE,FFT=FALSE,duration=duration))
+                                                              outputDataDirectory=outputDataDirectory,onlyLoad = FALSE,FFT=FALSE,duration=duration))
                ,mc.cores = ncores)
 
 #remove errored participants
