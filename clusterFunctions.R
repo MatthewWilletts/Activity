@@ -1046,6 +1046,86 @@ sourceCpp(code = '// [[Rcpp::depends(BH)]]
 
 
 
+
+
+sourceCpp(code = '// [[Rcpp::depends(BH)]]
+          #include <Rcpp.h>
+          using namespace Rcpp;
+          
+          // [[Rcpp::depends(BH, bigmemory)]]
+          #include <bigmemory/MatrixAccessor.hpp>
+          
+          #include <numeric>
+          
+          
+          // Dispatch function for BigCV
+          //
+          // [[Rcpp::export]]
+  NumericVector BigRowSumsChunk(SEXP pBigMat,SEXP start_row, SEXP end_row) {
+
+          XPtr<BigMatrix> xpMat(pBigMat);
+          MatrixAccessor<double> mat(*xpMat);
+          NumericVector value(1);
+          Rcpp::IntegerVector srowvect(start_row);
+          Rcpp::IntegerVector erowvect(end_row);
+          int srow = srowvect[0];
+          int erow = erowvect[0];
+          int diffrow = erow-srow;
+          NumericVector rowSums(diffrow, 0.0);
+
+          
+    for (int jj = 0; jj < xpMat->ncol(); jj++) {
+      for (int ii = 0; ii < diffrow; ii++) {
+        value = mat[jj][ii+start_row];
+        if (all(!is_na(value))) {
+          rowSums[ii] += value[0];
+        }   
+      }   
+    }   
+    return rowSums;
+  }')
+
+
+
+sourceCpp(code = '// [[Rcpp::depends(BH)]]
+          #include <Rcpp.h>
+          using namespace Rcpp;
+          
+          // [[Rcpp::depends(BH, bigmemory)]]
+          #include <bigmemory/MatrixAccessor.hpp>
+          
+          #include <numeric>
+          
+          
+          // Dispatch function for BigCV
+          //
+          // [[Rcpp::export]]
+          NumericVector BigColSumsChunk(SEXP pBigMat,SEXP start_col, SEXP end_col) {
+          
+          XPtr<BigMatrix> xpMat(pBigMat);
+          MatrixAccessor<double> mat(*xpMat);
+          NumericVector value(1);
+          Rcpp::IntegerVector srowvect(start_row);
+          Rcpp::IntegerVector erowvect(end_row);
+          int srow = srowvect[0];
+          int erow = erowvect[0];
+          int diffrow = erow-srow;
+          NumericVector colSums(diffrow, 0.0);
+          
+          
+          for (int jj = 0; jj < diffrow; jj++) {
+          for (int ii = 0; ii < xpMat->nrow(); ii++) {
+          value = mat[jj+srow][ii];
+          if (all(!is_na(value))) {
+          colSums[jj] += value[0];
+          }   
+          }   
+          }   
+          return colSums;
+          }')
+
+
+
 computeCVbigmatrix<-function(Proximity.bigmatrix.descfilepath,CV.bigmatrix.descfilepath,rowmeanvalues,colmeanvalues,meanvalue,nchunks=nchunks,chunkID=chunkID,ncores=ncores,coreID){
 
 #attach proxmatrix
@@ -1069,8 +1149,64 @@ procIndices<-c(startIndex,startIndex+cumsum(procIndices))
 procStartIndex<-procIndices[coreID]
 procEndIndex<-procIndices[coreID+1]
 
-endrow<-BigCVpart(pBigMat = Proximity.bigmatrix@address,outputBigMat = CV.bigmatrix@address,rmeans = rowmeanvalues,cmeans =colmeanvalues,totalmeanval =meanvalue,start_row =procStartIndex, procEndIndex )
+endrow<-BigCVpart(pBigMat = Proximity.bigmatrix@address,outputBigMat = CV.bigmatrix@address,rmeans = rowmeanvalues,cmeans =colmeanvalues,totalmeanval =meanvalue,start_row =procStartIndex, end_row = procEndIndex )
 
 return(cat(paste0('finished CV for node ',chunkID,' and core ',coreID,'\n')))
 
 }
+
+ComputeRowSumBigMatrixChunk<-function(Proximity.bigmatrix.descfilepath,nchunks=nchunks,chunkID=chunkID,ncores=ncores,coreID){
+  
+  #attach proxmatrix
+  Proximity.bigmatrix<-attach.big.matrix(Proximity.bigmatrix.descfilepath)
+  
+  
+  chunkIndices<-splitNumber(number = nrow(Proximity.bigmatrix),nprocs = nchunks)
+  chunkIndices<-c(0,cumsum(chunkIndices))
+  #now find indices that we are to calculate CV over for this node
+  startIndex<-chunkIndices[chunkID]
+  endIndex<-chunkIndices[chunkID+1]
+  
+  
+  #now for this core
+  procIndices<-splitNumber(number = (endIndex-startIndex),nprocs = ncores)
+  procIndices<-c(startIndex,startIndex+cumsum(procIndices))
+  
+  procStartIndex<-procIndices[coreID]
+  procEndIndex<-procIndices[coreID+1]
+  
+  rowsums<-BigRowSumsChunk(pBigMat=Proximity.bigmatrix@address,start_row =procStartIndex,end_row= procEndIndex)
+
+  return(rowsums)
+}
+
+ComputeColSumBigMatrixChunk<-function(Proximity.bigmatrix.descfilepath,nchunks=nchunks,chunkID=chunkID,ncores=ncores,coreID){
+  
+  #attach proxmatrix
+  Proximity.bigmatrix<-attach.big.matrix(Proximity.bigmatrix.descfilepath)
+  
+  
+  chunkIndices<-splitNumber(number = ncol(Proximity.bigmatrix),nprocs = nchunks)
+  chunkIndices<-c(0,cumsum(chunkIndices))
+  #now find indices that we are to calculate CV over for this node
+  startIndex<-chunkIndices[chunkID]
+  endIndex<-chunkIndices[chunkID+1]
+  
+  
+  #now for this core
+  procIndices<-splitNumber(number = (endIndex-startIndex),nprocs = ncores)
+  procIndices<-c(startIndex,startIndex+cumsum(procIndices))
+  
+  procStartIndex<-procIndices[coreID]
+  procEndIndex<-procIndices[coreID+1]
+  
+  rowsums<-BigColSumsChunk(pBigMat=Proximity.bigmatrix@address,start_col =procStartIndex,end_col= procEndIndex)
+  
+  return(rowsums)
+}
+
+
+
+  
+  
+  
