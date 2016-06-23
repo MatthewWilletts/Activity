@@ -1,7 +1,7 @@
   #Function for cleaning up raw bout data to machine-readible format for analysis
 #cleanData <- function(jointFiles=jointFiles,labelDirectory=labelDirectory,dataDirectory=dataDirectory,drop=dropvals,outputLabelDir=outputLabelDir,instanceLabelDirectory=instanceLabelDirectory){
 
-cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outputLabelDir,instanceLabelDirectory,outputDataDirectory,onlyLoad=FALSE){
+cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outputLabelDir,instanceLabelDirectory,outputDataDirectory,onlyLoad=FALSE,FFT=FALSE,duration=30){
   
   
   participantID<-gsub(jointFiles[4],pattern = ".csv",replacement = '')
@@ -43,16 +43,22 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     #Load up Feature Data
     featureData<-fread(file.path(dataDirectory,jointFiles[2]))
     featureData$identifier<-participantID
+    
+    #delete first data point
+    featureData<-featureData[-1,]
+    
+    if(FFT){
     #Load up FFT Data
     FFTData<-fread(file.path(dataDirectory,jointFiles[3]))
     FFTData$identifier<-participantID
+    FFTData$Time<-substr(FFTData$Time,1,19)
     
+    }
     
     
     #remove fractional seconds
     featureData$Time<-substr(featureData$Time,1,19)
-    FFTData$Time<-substr(FFTData$Time,1,19)
-    
+
     
     start_times<-labelData$StartDateTime[1]+0:4
     
@@ -73,11 +79,14 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     #only store data points inside labelled epoch
     # minus one as extractLabelsSingleFile does not output final data point for labels
     labelledData$labelledFeatureData<-featureData[start_row:(end_row-1),]
+    
+    if(FFT){
     labelledData$labelledFFTData<-FFTData[start_row:(end_row-1),]
+    }
     
     #now round labels to align with spacing of features
-    labelData$StartDateTime<-round5secs(labelData$StartDateTime,startTime = labelData$StartDateTime[1])
-    labelData$EndDateTime<-round5secs(labelData$EndDateTime,startTime = labelData$StartDateTime[1])
+    labelData$StartDateTime<-roundXsecs(labelData$StartDateTime,startTime = labelData$StartDateTime[1],duration = duration)
+    labelData$EndDateTime<-roundXsecs(labelData$EndDateTime,startTime = labelData$StartDateTime[1],duration = duration)
     
     #now we need to turn from bout level labels to annotations. Here we use a slightly modified TLBC function, annotationsToLabels
     extractLabelsSingleFile(labelData, identifier= participantID,winSize = 5,instanceLabelDirectory = instanceLabelDirectory)
@@ -88,9 +97,11 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     cat(paste0('Writing ALL feature data file ', participantID,'.csv','\n'))
     write.csv(x=labelledData$labelledFeatureData,file=paste0(outputDataDirectory,'/', participantID,'ALLFeature.csv'),row.names=FALSE)
     
+    if(FFT){
     cat(paste0('Writing ALL FFT data file ', participantID,'.csv','\n'))
     write.csv(x=labelledData$labelledFFTData,file=paste0(outputDataDirectory,'/', participantID,'ALLFFT.csv'),row.names=FALSE)
-
+    }
+    
     #remove unknown labels at beginning and end of period - this is the 'clean' data
     cleanData<-removeUnlabelledEnds(data=labelledData)
    
@@ -99,10 +110,10 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     
     cat(paste0('Writing CLEAN feature data file ', participantID,'.csv','\n'))
     write.csv(x=cleanData$cleanLabelledFeatureData,file=paste0(outputDataDirectory,'/', participantID,'CleanFeature.csv'),row.names=FALSE)
-    
+    if(FFT){
     cat(paste0('Writing CLEANFFT data file ', participantID,'.csv','\n'))
     write.csv(x=cleanData$cleanLabelledFFTData,file=paste0(outputDataDirectory,'/', participantID,'CleanFFT.csv'),row.names=FALSE)
-    
+    }
       } else {
     cat(paste0('processed files for ', participantID,' already exist. Loading...','\n'))
         
@@ -111,12 +122,14 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,drop=dropvals,outp
     
     labelledData$instanceLabelData<-fread(file.path(instanceLabelDirectory, paste0(participantID,'ALL.csv')))
     labelledData$labelledFeatureData<-fread(input =paste0(outputDataDirectory,'/', participantID,'ALLFeature.csv'))
+    if(FFT){
     labelledData$labelledFFTData<-fread(input=paste0(outputDataDirectory,'/', participantID,'ALLFFT.csv'))
- 
+    }
     cleanData$cleanInstanceLabelData<-fread(input = paste0(instanceLabelDirectory,'/', participantID,'Clean.csv'))
     cleanData$cleanLabelledFeatureData<-fread(input=paste0(outputDataDirectory,'/', participantID,'CleanFeature.csv'))
+    if(FFT){
     cleanData$cleanLabelledFFTData<-fread(input=paste0(outputDataDirectory,'/', participantID,'CleanFFT.csv'))
-    
+    }
       }
   return(list(cleanData=cleanData,labelledData=labelledData))
   
@@ -128,6 +141,14 @@ round5secs <- function( x,startTime) {
   startSecs<-start$sec
   x <- as.POSIXlt( x - startSecs+ as.difftime( 2.5, units="secs" ) )
   x$sec <- 5*(x$sec %/% 5) 
+  as.POSIXct(x+startSecs)
+} 
+
+roundXsecs <- function( x,startTime,duration=30) { 
+  start<-as.POSIXlt(startTime)
+  startSecs<-start$sec
+  x <- as.POSIXlt( x - startSecs+ as.difftime( (duration/2), units="secs" ) )
+  x$sec <- duration*(x$sec %/% duration) 
   as.POSIXct(x+startSecs)
 } 
 
@@ -1200,9 +1221,9 @@ ComputeColSumBigMatrixChunk<-function(Proximity.bigmatrix.descfilepath,nchunks=n
   procStartIndex<-procIndices[coreID]
   procEndIndex<-procIndices[coreID+1]
   
-  rowsums<-BigColSumsChunk(pBigMat=Proximity.bigmatrix@address,start_col =procStartIndex,end_col= procEndIndex)
+  colsums<-BigColSumsChunk(pBigMat=Proximity.bigmatrix@address,start_col =procStartIndex,end_col= procEndIndex)
   
-  return(rowsums)
+  return(colsums)
 }
 
 bind_sum_files<-function(inputDirectory,startToken,leftOutParticipant=participants[leave_out],nchunks){
@@ -1210,6 +1231,6 @@ bind_sum_files<-function(inputDirectory,startToken,leftOutParticipant=participan
   chunkids<-1:nchunks
   listOfFiles<-paste0(startToken,'_',leftOutParticipant,'_',chunkids,'_subsampled.csv')
 
-  all_nodes<-foreach(file=listOfNodeFiles,.combine = c,.multicombine = TRUE) %dopar% read.csv(file=file.path(outputDirectory,file))
+  all_nodes<-foreach(fileaddress=listOfFiles,.combine = 'c',.multicombine = TRUE) %dopar% as.vector(read.csv(file=file.path(inputDirectory,fileaddress)))
 }
   
