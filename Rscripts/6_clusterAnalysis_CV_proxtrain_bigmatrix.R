@@ -1,6 +1,5 @@
 #MultiCore analysis on ARCUS B cluster of 120 or so participants labelled data, using the Holmes Algorithm
 
-
 library(optparse)
 library(randomForest)
 library(data.table)
@@ -25,7 +24,12 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
 
 
 #Take in arguements from command line
-#This script will read in the ProxTrain matrix as a bigmemory matrix and do eigenvector analysis on it
+#This script will calculate a chunk of the ProxTrain matrix
+
+#So we need to know:
+#a) how many chunks job is divided into
+#b) which chunk we are doing
+#c) which participant we are leaving out
 
 
 option_list <- list(
@@ -70,31 +74,30 @@ resultsDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/results'
 
 
 #Directories for RF and HMM models
+RFoutput<-paste0(resultsDataDirectory,'/RFoutput')
+
 ProxOutput<-paste0(resultsDataDirectory,'/RFoutput/ProxTrain')
+
 
 #load participants
 load(file =file.path(resultsDataDirectory,'participants.RData'))
 
-#load data - ProxTrain
-ProxTrain_matrix<-read.big.matrix(filename =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'_subsampled.csv')),skip=1,header = FALSE,type = 'double',backingpath = ProxOutput,backingfile = paste0('ProxTrainBackingFile_',participants[leave_out]))
+#load mean values
 
-#create output matrix - CV
-CV_matrix<-big.matrix(nrow=nrow(ProxTrain_matrix),ncol = ncol(ProxTrain_matrix),type = 'double',backingpath = ProxOutput,backingfile = paste0('CVBackingFile_',participants[leave_out]))
+rowmeanvalues<-read.csv(file  = file.path(ProxOutput,paste0('CV_rowmeans_',participants[leave_out],'_subsampled.csv')))
+colmeanvalues<-read.csv(file  = file.path(ProxOutput,paste0('CV_colmeans_',participants[leave_out],'_subsampled.csv')))
+meanvalue<-read.csv(file  = file.path(ProxOutput,paste0('CV_totmean_',participants[leave_out],'_subsampled.csv')))
 
 
-#calculate mean values by row, column and overall
-rowmeanvalues<-BigRowSums(pBigMat = ProxTrain_matrix@address)
+ProxTrainDescriptorFile<-paste0('ProxTrainBackingFile_',participants[leave_out],'.desc')
 
-meanvalue<-sum(rowmeanvalues)/(ncol(ProxTrain_matrix)*nrow(ProxTrain_matrix))
+CVDescriptorFile<-paste0('CVBackingFile_',participants[leave_out],'.desc')
 
-rowmeanvalues<-rowmeanvalues/ncol(ProxTrain_matrix)
 
-colmeanvalues<-colsum(x = ProxTrain_matrix)
-colmeanvalues<-colmeanvalues/nrow(ProxTrain_matrix)
+#Now calculate CV matrix piecewise
 
-#save results
-
-write.csv(x =  rowmeanvalues,file  = file.path(ProxOutput,paste0('CV_rowmeans_',participants[leave_out],'_subsampled.csv')),row.names = FALSE)
-write.csv(x =  colmeanvalues,file  = file.path(ProxOutput,paste0('CV_colmeans_',participants[leave_out],'_subsampled.csv')),row.names = FALSE)
-write.csv(x =  meanvalue,file  = file.path(ProxOutput,paste0('CV_totmean_',participants[leave_out],'_subsampled.csv')),row.names = FALSE)
-
+listofEndRows<- foreach(corenumber=1:ncores, .combine = rbind) %dopar% computeCVbigmatrix(
+  Proximity.bigmatrix.descfilepath=file.path(ProxOutput,ProxTrainDescriptorFile),
+  ,CV.bigmatrix.descfilepath =file.path(ProxOutput,CVDescriptorFile)
+  ,rowmeanvalues=rowmeanvalues,colmeanvalues = colmeanvalues,meanvalue = meanvalue
+  ,nchunks = nchunks,chunkID = chunkID,ncores = ncores,coreID = corenumber)

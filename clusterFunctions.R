@@ -533,9 +533,9 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
 
 computeCVmatrix<-function(Proximity){
   rowsum<-rowSums(Proximity)
-  rowsum<-rowsum/length(rowsum)
+  rowsum<-rowsum/ncol(Proximity)
   colsum<-colSums(Proximity)
-  colsum<-colsum/length(colsum)
+  colsum<-colsum/nrow(Proximity)
 cv=0.5*t(t(Proximity-rowsum+mean(Proximity))-colsum)
 return(cv) 
 }
@@ -864,8 +864,149 @@ sourceCpp(code = '// [[Rcpp::depends(BH)]]
           ')
   
 
+# sourceCpp(code = '// [[Rcpp::depends(BH)]]
+# #include <Rcpp.h>
+#           using namespace Rcpp;
+#           
+#           // [[Rcpp::depends(BH, bigmemory)]]
+#           #include <bigmemory/MatrixAccessor.hpp>
+#           
+#           #include <numeric>
+#           
+#           // Logic for BigCV
+#           template <typename T>
+#           NumericVector BigCV(XPtr<BigMatrix> pMat, MatrixAccessor<T> mat,XPtr<BigMatrix> output, MatrixAccessor<T> omat,SEXP rmeans,SEXP cmeans, NumericVector totmean) {
+#           NumericVector value(1);
+# 
+#           for (int jj = 0; jj < pMat->ncol(); jj++) {
+#           for (int ii = 0; ii < pMat->nrow(); ii++) {
+#           value = mat[jj][ii];
+#           omat[jj][ii] = 0.5*(value[0] - rmeans[ii] - cmeans[jj] + totmean[0]);
+#           }   
+#           }
+#           return totmean[0];
+#           }
+#           
+#           // Dispatch function for BigCV
+#           //
+#           // [[Rcpp::export]]
+#           NumericVector BigCV(SEXP pBigMat,SEXP outputBigMat, SEXP rowmeanvals, SEXP colmeanvals, SEXP totalmeanval) {
+#           XPtr<BigMatrix> xpMat(pBigMat);
+#           XPtr<BigMatrix> xoMat(outputBigMat);
+# 
+#           
+#           switch(xpMat->matrix_type()) {
+#           case 1:
+#           return BigCV(xpMat, MatrixAccessor<char>(*xpMat),xoMat, MatrixAccessor<char>(*xoMat),rowmeanvals,colmeanvals,totalmeanval);
+#           case 2:
+#           return BigCV(xpMat, MatrixAccessor<short>(*xpMat),xoMat, MatrixAccessor<short>(*xoMat),rowmeanvals,colmeanvals,totalmeanval);
+#           case 4:
+#           return BigCV(xpMat, MatrixAccessor<int>(*xpMat),xoMat, MatrixAccessor<int>(*xoMat),rowmeanvals,colmeanvals,totalmeanval);
+#           case 6:
+#           return BigCV(xpMat, MatrixAccessor<float>(*xpMat),xoMat, MatrixAccessor<float>(*xoMat),rowmeanvals,colmeanvals,totalmeanval);
+#           case 8:
+#           return BigCV(xpMat, MatrixAccessor<double>(*xpMat),xoMat, MatrixAccessor<double>(*xoMat),rowmeanvals,colmeanvals,totalmeanval);
+#           default:
+#           throw Rcpp::exception("unknown type detected for big.matrix object!");
+#           }   
+#           }
+#           ')
+# 
+# 
+# sourceCpp(code = '// [[Rcpp::depends(BH)]]
+# #include <Rcpp.h>
+#           using namespace Rcpp;
+#           
+#           // [[Rcpp::depends(BH, bigmemory)]]
+#           #include <bigmemory/MatrixAccessor.hpp>
+#           
+#           #include <numeric>
+#           
+#           // Logic for BigCV
+#           template <typename T>
+#           NumericVector BigCVpart(XPtr<BigMatrix> pMat, MatrixAccessor<T> mat,XPtr<BigMatrix> output, MatrixAccessor<T> omat, double *rmeans,double *cmeans,double *totmean,int *start_row) {
+#           NumericVector value(1);
+# 
+#           
+#           int start_index = start_row[0];
+# 
+#           for (int jj = 0; jj < pMat->ncol(); jj++) {
+#           for (int ii = 0; ii < pMat->nrow(); ii++) {
+#           value = mat[jj][ii];
+#           omat[jj][ii+start_index] = 0.5*(value[0] - rmeans[ii+start_index] - cmeans[jj] + totmean[0]);
+#           }   
+#           }
+#           return rmeans[1];
+#           }
+#           
+#           // Dispatch function for BigCV
+#           //
+#           // [[Rcpp::export]]
+#           NumericVector BigCVpart(SEXP pBigMat,SEXP outputBigMat, SEXP rowmeanvals, SEXP colmeanvals, SEXP totalmeanval,SEXP start_row) {
+#           XPtr<BigMatrix> xpMat(pBigMat);
+#           XPtr<BigMatrix> xoMat(outputBigMat);
+#           double *prm, *pcm, *ptm, *psr;
+#           prm = REAL(rowmeanvals);
+#           pcm = REAL(colmeanvals);
+#           ptm = REAL(totalmeanval);
+#           psr = REAL(start_row);
+# 
+#           switch(xpMat->matrix_type()) {
+#           case 1:
+#           return BigCVpart(xpMat, MatrixAccessor<char>(*xpMat),xoMat, MatrixAccessor<char>(*xoMat),prm,pcm,ptm,psr);
+#           case 2:
+#           return BigCVpart(xpMat, MatrixAccessor<short>(*xpMat),xoMat, MatrixAccessor<short>(*xoMat),prm,pcm,ptm,psr);
+#           case 4:
+#           return BigCVpart(xpMat, MatrixAccessor<int>(*xpMat),xoMat, MatrixAccessor<int>(*xoMat),prm,pcm,ptm,psr);
+#           case 6:
+#           return BigCVpart(xpMat, MatrixAccessor<float>(*xpMat),xoMat, MatrixAccessor<float>(*xoMat),prm,pcm,ptm,psr);
+#           case 8:
+#           return BigCVpart(xpMat, MatrixAccessor<double>(*xpMat),xoMat, MatrixAccessor<double>(*xoMat),prm,pcm,ptm,psr);
+#           default:
+#           throw Rcpp::exception("unknown type detected for big.matrix object!");
+#           }   
+#           }
+#           ')
+# 
+# 
+# 
+# sourceCpp(code = '// [[Rcpp::depends(BH)]]
+#           #include <Rcpp.h>
+#           using namespace Rcpp;
+#           
+#           // [[Rcpp::depends(BH, bigmemory)]]
+#           #include <bigmemory/MatrixAccessor.hpp>
+#           
+#           #include <numeric>
+#           
+#           
+#           // Dispatch function for BigCV
+#           //
+#           // [[Rcpp::export]]
+#           NumericVector BigCV(SEXP pBigMat,SEXP outputBigMat, SEXP rmeans, SEXP cmeans, SEXP totalmeanval) {
+#           
+#           XPtr<BigMatrix> xpMat(pBigMat);
+#           XPtr<BigMatrix> xoMat(outputBigMat);
+#           MatrixAccessor<double> mat(*xpMat);
+#           MatrixAccessor<double> omat(*xoMat);
+# 
+#           Rcpp::NumericVector rmeansvect(rmeans);
+#           Rcpp::NumericVector cmeansvect(cmeans);
+#           Rcpp::NumericVector totmean(totalmeanval);
+#           Rcpp::NumericVector value(1);
+#           
+#           for (int jj = 0; jj < xpMat->ncol(); jj++) {
+#           for (int ii = 0; ii < xpMat->nrow(); ii++) {
+#           value = mat[jj][ii];
+#           omat[jj][ii] = 0.5*(value[0] - rmeansvect[ii] - cmeansvect[jj] + totmean[0]);
+#           }   
+#           }
+#           return rmeans;
+#           }
+#           ')
+
 sourceCpp(code = '// [[Rcpp::depends(BH)]]
-#include <Rcpp.h>
+          #include <Rcpp.h>
           using namespace Rcpp;
           
           // [[Rcpp::depends(BH, bigmemory)]]
@@ -873,41 +1014,63 @@ sourceCpp(code = '// [[Rcpp::depends(BH)]]
           
           #include <numeric>
           
-          // Logic for BigCV
-          template <typename T>
-          NumericVector BigCV(XPtr<BigMatrix> pMat, MatrixAccessor<T> mat,XPtr<BigMatrix> output, MatrixAccessor<T> omat,NumericVector rmeans,NumericVector cmeans,NumericVector totmean) {
-          NumericVector value(1);
-
-          for (int jj = 0; jj < pMat->ncol(); jj++) {
-          for (int ii = 0; ii < pMat->nrow(); ii++) {
-          value = mat[jj][ii];
-          omat[jj][ii] = 0.5*(value[0] - rmeans[ii] - cmeans[jj] + totmean[0]);
-          }   
-          }
-          return totmean;
-          }
           
           // Dispatch function for BigCV
           //
           // [[Rcpp::export]]
-          NumericVector BigCV(SEXP pBigMat,SEXP outputBigMat, SEXP rowmeanvals, SEXP colmeanvals, SEXP totalmeanval) {
+          NumericVector BigCVpart(SEXP pBigMat,SEXP outputBigMat, SEXP rmeans, SEXP cmeans, SEXP totalmeanval,SEXP start_row,SEXP end_row) {
+          
           XPtr<BigMatrix> xpMat(pBigMat);
           XPtr<BigMatrix> xoMat(outputBigMat);
-
+          MatrixAccessor<double> mat(*xpMat);
+          MatrixAccessor<double> omat(*xoMat);
           
-          switch(xpMat->matrix_type()) {
-          case 1:
-          return BigCV(xpMat, MatrixAccessor<char>(*xpMat),xoMat, MatrixAccessor<char>(*xoMat),rowmeanvals,colmeanvals,totalmeanval);
-          case 2:
-          return BigCV(xpMat, MatrixAccessor<short>(*xpMat),xoMat, MatrixAccessor<short>(*xoMat),rowmeanvals,colmeanvals,totalmeanval);
-          case 4:
-          return BigCV(xpMat, MatrixAccessor<int>(*xpMat),xoMat, MatrixAccessor<int>(*xoMat),rowmeanvals,colmeanvals,totalmeanval);
-          case 6:
-          return BigCV(xpMat, MatrixAccessor<float>(*xpMat),xoMat, MatrixAccessor<float>(*xoMat),rowmeanvals,colmeanvals,totalmeanval);
-          case 8:
-          return BigCV(xpMat, MatrixAccessor<double>(*xpMat),xoMat, MatrixAccessor<double>(*xoMat),rowmeanvals,colmeanvals,totalmeanval);
-          default:
-          throw Rcpp::exception("unknown type detected for big.matrix object!");
+          Rcpp::NumericVector rmeansvect(rmeans);
+          Rcpp::NumericVector cmeansvect(cmeans);
+          Rcpp::NumericVector totmean(totalmeanval);
+          Rcpp::NumericVector value(1);
+          Rcpp::IntegerVector srowvect(start_row);
+          Rcpp::IntegerVector erowvect(end_row);
+          int srow = srowvect[0];
+          int erow = erowvect[0];
+
+          for (int jj = 0; jj < xpMat->ncol(); jj++) {
+          for (int ii = srow; ii < erow; ii++) {
+          value = mat[jj][ii];
+          omat[jj][ii] = 0.5*(value[0] - rmeansvect[ii] - cmeansvect[jj] + totmean[0]);
           }   
           }
+          return erow;
+          }
           ')
+
+
+
+computeCVbigmatrix<-function(Proximity.bigmatrix.descfilepath,CV.bigmatrix.descfilepath,rowmeanvalues,colmeanvalues,meanvalue,nchunks=nchunks,chunkID=chunkID,ncores=ncores,coreID){
+
+#attach proxmatrix
+Proximity.bigmatrix<-attach.big.matrix(Proximity.bigmatrix.descfilepath)
+
+#attach CV output matrix
+CV.bigmatrix<-attach.big.matrix(CV.bigmatrix.descfilepath)
+
+
+chunkIndices<-splitNumber(number = nrow(Proximity.bigmatrix),nprocs = nchunks)
+chunkIndices<-c(0,cumsum(chunkIndices))
+#now find indices that we are to calculate CV over for this node
+startIndex<-chunkIndices[chunkID]
+endIndex<-chunkIndices[chunkID+1]
+
+
+#now for this core
+procIndices<-splitNumber(number = (endIndex-startIndex),nprocs = ncores)
+procIndices<-c(startIndex,startIndex+cumsum(procIndices))
+
+procStartIndex<-procIndices[coreID]
+procEndIndex<-procIndices[coreID+1]
+
+endrow<-BigCVpart(pBigMat = Proximity.bigmatrix@address,outputBigMat = CV.bigmatrix@address,rmeans = rowmeanvalues,cmeans =colmeanvalues,totalmeanval =meanvalue,start_row =procStartIndex, procEndIndex )
+
+return(cat(paste0('finished CV for node ',chunkID,' and core ',coreID,'\n')))
+
+}
