@@ -84,8 +84,8 @@ load(file =file.path(resultsDataDirectory,'participants.RData'))
 
 #load mean values
 
-rowmeanvalues<-bind_sum_files(inputDirectory =ProxOutput,startToken ='CV_rowsums',leftOutParticipant = participantID[leave_out],nchunks = nchunks)
-colmeanvalues<-bind_sum_files(inputDirectory =ProxOutput,startToken ='CV_colsum',leftOutParticipant = participantID[leave_out],nchunks = nchunks)
+rowmeanvalues<-bind_sum_files(inputDirectory =ProxOutput,startToken ='CV_rowsums',leftOutParticipant =participants[leave_out],nchunks = nchunks)
+colmeanvalues<-bind_sum_files(inputDirectory =ProxOutput,startToken ='CV_colsum',leftOutParticipant = participants[leave_out],nchunks = nchunks)
 
 meanvalue<-sum(rowmeanvalues)
 rowmeanvalues<-rowmeanvalues/length(colmeanvalues)
