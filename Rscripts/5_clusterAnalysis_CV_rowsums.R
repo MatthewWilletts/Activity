@@ -75,7 +75,7 @@ ProxOutput<-paste0(resultsDataDirectory,'/RFoutput/ProxTrain')
 #load participants
 load(file =file.path(resultsDataDirectory,'participants.RData'))
 
-ProxTrainDescriptorFile<-paste0('ProxTrainBackingFile_',participants[leave_out],'.desc')
+ProxTrainDescriptorFile<-file.path(ProxOutput,paste0('ProxTrainBackingFile_',participants[leave_out],'.desc'))
 
 RowSum<-foreach(corenumber=1:ncores, .combine = c) %dopar% ComputeRowSumBigMatrixChunk(
   Proximity.bigmatrix.descfilepath=ProxTrainDescriptorFile,nchunks=nchunks,chunkID=chunkID,ncores=ncores,coreID=corenumber)
