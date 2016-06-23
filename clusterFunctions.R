@@ -1076,7 +1076,7 @@ sourceCpp(code = '// [[Rcpp::depends(BH)]]
           
     for (int jj = 0; jj < xpMat->ncol(); jj++) {
       for (int ii = 0; ii < diffrow; ii++) {
-        value = mat[jj][ii+start_row];
+        value = mat[jj][ii+srow];
         if (all(!is_na(value))) {
           rowSums[ii] += value[0];
         }   
@@ -1105,17 +1105,17 @@ sourceCpp(code = '// [[Rcpp::depends(BH)]]
           XPtr<BigMatrix> xpMat(pBigMat);
           MatrixAccessor<double> mat(*xpMat);
           NumericVector value(1);
-          Rcpp::IntegerVector srowvect(start_row);
-          Rcpp::IntegerVector erowvect(end_row);
-          int srow = srowvect[0];
-          int erow = erowvect[0];
-          int diffrow = erow-srow;
+          Rcpp::IntegerVector scolvect(start_col);
+          Rcpp::IntegerVector ecolvect(end_col);
+          int scol = scolvect[0];
+          int ecol = ecolvect[0];
+          int diffcol = ecol-scol;
           NumericVector colSums(diffrow, 0.0);
           
           
           for (int jj = 0; jj < diffrow; jj++) {
           for (int ii = 0; ii < xpMat->nrow(); ii++) {
-          value = mat[jj+srow][ii];
+          value = mat[jj+scol][ii];
           if (all(!is_na(value))) {
           colSums[jj] += value[0];
           }   
