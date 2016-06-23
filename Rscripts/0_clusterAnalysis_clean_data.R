@@ -134,4 +134,4 @@ write.csv(x=AllData,file = file.path(outputDataDirectory,paste0('AllData_',durat
 
 cat('writing participants')
 #write participants
-save(participants,file =file.path(resultsDataDirectory,'_participants_',duration,'.RData'))
+save(participants,file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RData')))
