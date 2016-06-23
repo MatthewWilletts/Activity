@@ -1213,5 +1213,3 @@ bind_sum_files<-function(inputDirectory,startToken,leftOutParticipant=participan
   all_nodes<-foreach(file=listOfNodeFiles,.combine = c,.multicombine = TRUE) %dopar% read.csv(file=file.path(outputDirectory,file))
 }
   
-  
-}  
