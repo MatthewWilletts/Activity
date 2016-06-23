@@ -27,8 +27,7 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
 
 
 #First, define data directories
-sftp://arcus-b.arc.ox.ac.uk/data/dph-ukbaccworkgroup/phpc0595/data/capture24/epoch5sec/p002ActivityEpoch.csv
-dataDirectory<-'/data/dph-ukbaccworkgroup/phpc0595/data/capture24/epoch5sec'
+dataDirectory<-'/data/dph-ukbaccworkgroup/phpc0595/data/capture24/epoch30sec'
 labelDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/label-data/label-dictionary-9-classes'
 instanceLabelDirectory<-'/data/dph-ukbaccworkgroup/magd4534/label-data/instance-label-dictionary-9-classes'
 outputDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/capture-processed/30sec'
