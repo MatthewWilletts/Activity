@@ -34,7 +34,7 @@ cat(nchunks)
 source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterDirectories.R')
 
 #load participants
-load(file =file.path(resultsDataDirectory,'participants_',duration,'.RData'))
+load(file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RData')))
 
 
 training_nodes<-cbind_node_files(inputDirectory=RFoutput,outputDirectory=RFoutput,startToken='training_nodes_',leftOutParticipant=participants[leave_out],nchunks=nchunks)
