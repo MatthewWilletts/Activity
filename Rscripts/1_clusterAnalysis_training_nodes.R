@@ -59,23 +59,7 @@ set.seed(chunkID)
 registerDoMC(ncores)
 
 #First, define data directories
-
-dataDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/capture-processed'
-labelDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/label-data/label-dictionary-9-classes'
-instanceLabelDirectory<-'/data/dph-ukbaccworkgroup/magd4534/label-data/instance-label-dictionary-9-classes'
-outputDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/capture-processed'
-resultsDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/results'
-  
-# dataDirectory<-'/Users/Matthew/Documents/Oxford/Activity/FeatureData'
-# labelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/LabelData'
-# instanceLabelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/InstanceLabelData'
-# outputDataDirectory<-dataDirectory
-# resultsDataDirectory<-outputDataDirectory
-
-
-#Directories for RF and HMM models
-RFoutput<-paste0(resultsDataDirectory,'/RFoutput')
-
+source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterDirectories.R')
 
 #load data
 AllData<-fread(input = file.path(outputDataDirectory,'AllData.csv'))
@@ -98,3 +82,7 @@ ntree_for_chunk<-splitNumber(ntrees,nchunks)[chunkID]
 
 
 RFoutput<-RF_nodes_chunk(TrainingFData=AllData[-iq,],TrainingBData=AllBehaviorData[-iq],TestingFData=AllData[iq,],ncores=ncores,ntree=ntree_for_chunk,savefileloc=RFoutput,chunkID=chunkID,nametoken =participants[leave_out] )
+
+
+
+
