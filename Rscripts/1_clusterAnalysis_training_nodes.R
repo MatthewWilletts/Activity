@@ -1,16 +1,8 @@
 #MultiCore analysis on ARCUS B cluster of 120 or so participants labelled data, using the Holmes Algorithm
 
-library(optparse)
-library(randomForest)
-library(data.table)
-library(RSpectra)
-library(mhsmm)
-library(parallel)
-library(stringr)
-library(doMC)
-library(foreach)
-library(MASS)
-library(Rcpp)
+#load packages
+source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterPackages.R')
+
 
 #In this script we will be doing 'leave one out' analysis for our participants
 
