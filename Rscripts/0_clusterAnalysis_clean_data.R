@@ -27,22 +27,7 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
 
 
 #First, define data directories
-dataDirectory<-'/data/dph-ukbaccworkgroup/phpc0595/data/capture24/epoch30sec'
-labelDirectory<-'/data/dph-ukbaccworkgroup/npeu0203/label-data/label-dictionary-9-classes'
-instanceLabelDirectory<-'/data/dph-ukbaccworkgroup/magd4534/label-data/instance-label-dictionary-9-classes'
-outputDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/capture-processed/30sec'
-resultsDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/results/30sec'
-
-# dataDirectory<-'/Users/Matthew/Documents/Oxford/Activity/FeatureData'
-# labelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/LabelData'
-# instanceLabelDirectory<-'/Users/Matthew/Documents/Oxford/Activity/InstanceLabelData'
-# outputDataDirectory<-dataDirectory
-# resultsDataDirectory<-outputDataDirectory
-
-
-#Directories for RF and HMM models
-RFoutput<-paste0(resultsDataDirectory,'/RFoutput')
-HMMoutput<-paste0(resultsDataDirectory,'/HMMoutput')
+source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterDirectories.R')
 
 
 listOfFeatureFiles<-list.files(dataDirectory,pattern = "\\ActivityEpoch[.]csv$")
@@ -84,13 +69,17 @@ Data<-mclapply(X = jointFiles,FUN = function(x) try(cleanData(jointFiles = x,
                                                               instanceLabelDirectory = instanceLabelDirectory,
                                                               labelDirectory = labelDirectory,
                                                               dataDirectory = dataDirectory,
-                                                              outputDataDirectory=outputDataDirectory,onlyLoad = FALSE,FFT=FALSE,duration=duration))
+                                                              outputDataDirectory=outputDataDirectory,onlyLoad = TRUE,FFT=FALSE,duration=duration))
                ,mc.cores = ncores)
 
+
+any_deleted_participants<-FALSE
 #remove errored participants
+if(length((which(sapply(Data,length)==1))>1)){
 deleteParticipants<-(which(sapply(Data,length)==1))
 Data[deleteParticipants]<-NULL
-
+any_deleted_participants<-TRUE
+}
 
 
 #AllFeatureData<-rbindlist(Data %>% map(c("labelledData", "labelledFeatureData")))
@@ -126,8 +115,11 @@ rm(Data)
 AllData<-AllData[which(!AllData$behavior=='unknown'),]
 
 #Create testing data - leave one out
+if(any_deleted_participants==TRUE){
 participants<-sapply(X = jointInstanceFiles[-deleteParticipants], function (x) gsub(pattern = '.csv',replacement = '',x = x))
-
+} else {
+participants<-sapply(X = jointInstanceFiles, function (x) gsub(pattern = '.csv',replacement = '',x = x))
+}
 cat('writing AllData file')
 #write data
 write.csv(x=AllData,file = file.path(outputDataDirectory,paste0('AllData_',duration,'.csv')))
