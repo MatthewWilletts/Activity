@@ -37,6 +37,7 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterDirectories.R')
 AllData<-fread(input = file.path(outputDataDirectory,paste0('AllData_',duration,'.csv')))
 
 #turn into matrix of features and a vector of behaviors
+
 AllBehaviorData<-as.vector(AllData[,behavior])
 AllIdentifierData<-as.vector(AllData[,identifier])
 
