@@ -39,8 +39,8 @@ load(file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RDat
 
 training_nodes<-cbind_node_files(inputDirectory=RFoutput,outputDirectory=RFoutput,startToken='training_nodes_',leftOutParticipant=participants[leave_out],nchunks=nchunks)
 
-cat(paste0('number of rows is ',nrow(training_nodes),'\n')))
-cat(paste0('number of cols is ',ncol(training_nodes),'\n')))
+cat(paste0('number of rows is ',nrow(training_nodes),'\n'))
+cat(paste0('number of cols is ',ncol(training_nodes),'\n'))
 
 if(!file.exists(file.path(RFoutput,paste0('training_nodes_',participants[leave_out],'.csv')))){
   
