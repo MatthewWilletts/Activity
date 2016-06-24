@@ -281,16 +281,16 @@ cleanUpCorr<-function(featureData){
   
   #replace with interpolated values
   if(length(ixy>0)){
-    featureData$corrxy[ixy]<-0.5*(featureData$corrxy[ixy+1]+featureData$corrxy[ixy-1])
+    featureData$corrxy[ixy]<-as.character(0.5*(as.numeric(featureData$corrxy[ixy+1])+as.numeric(featureData$corrxy[ixy-1])))
     featureData$corrxy<-as.numeric(as.character(featureData$corrxy))
   }
   if(length(ixz>0)){
-    featureData$corrxz[ixz]<-0.5*(featureData$corrxz[ixz+1]+featureData$corrxz[ixz-1])
+    featureData$corrxz[ixz]<-as.character(0.5*(as.numeric(featureData$corrxz[ixz+1])+as.numeric(featureData$corrxz[ixz-1])))
     featureData$corrxz<-as.numeric(as.character(featureData$corrxz))
     
   }
   if(length(iyz>0)){
-    featureData$corryz[iyz]<-0.5*(featureData$corryz[iyz+1]+featureData$corryz[iyz-1])
+    featureData$corryz[iyz]<-as.character(0.5*(as.numeric(featureData$corryz[iyz+1])+as.numeric(featureData$corryz[iyz-1])))
     featureData$corryz<-as.numeric(as.character(featureData$corryz))
   }
   
