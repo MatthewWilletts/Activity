@@ -26,8 +26,8 @@ ncores<-16
 
 registerDoMC(ncores)
 
-cat(ntrees)
-cat(nchunks)
+cat(paste0(ntrees,'\n'))
+cat(paste0(nchunks,'\n'))
 
 
 #define data directories
@@ -39,8 +39,8 @@ load(file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RDat
 
 training_nodes<-cbind_node_files(inputDirectory=RFoutput,outputDirectory=RFoutput,startToken='training_nodes_',leftOutParticipant=participants[leave_out],nchunks=nchunks)
 
-cat(paste0('number of rows is ',nrow(training_nodes)))
-cat(paste0('number of cols is ',ncol(training_nodes)))
+cat(paste0('number of rows is ',nrow(training_nodes,'\n')))
+cat(paste0('number of cols is ',ncol(training_nodes,'\n')))
 
 if(!file.exists(file.path(RFoutput,paste0('training_nodes_',participants[leave_out],'.csv')))){
   
@@ -51,7 +51,7 @@ write.csv(x = training_nodes,file =file.path(RFoutput,paste0('training_nodes_',p
 if(!file.exists(file.path(RFoutput,paste0('testing_nodes_',participants[leave_out],'.csv')))){
  
 
-  testing_nodes<-cbind_node_files(inputDirectory=RFoutput,outputDirectory=RFoutput,startToken='testing_nodes_')
+  testing_nodes<-cbind_node_files(inputDirectory=RFoutput,outputDirectory=RFoutput,startToken='testing_nodes_',leftOutParticipant=participants[leave_out],nchunks=nchunks)
   
   write.csv(x = testing_nodes,file =file.path(RFoutput,paste0('testing_nodes_',participants[leave_out],'.csv')),row.names = FALSE )
   
