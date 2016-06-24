@@ -41,6 +41,8 @@ AllData<-fread(input = file.path(outputDataDirectory,paste0('AllData_',duration,
 AllBehaviorData<-as.vector(AllData[,behavior])
 AllIdentifierData<-as.vector(AllData[,identifier])
 
+AllData$corryz<-as.numeric(AllData$corryz)
+
 AllData<-as.matrix(AllData[,4:ncol(AllData),with=FALSE])
 
 

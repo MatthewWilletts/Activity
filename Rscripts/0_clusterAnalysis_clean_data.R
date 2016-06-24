@@ -102,7 +102,7 @@ AllInstanceData<-rbindlist(lapply(X = lapply(X=Data,'[[',"labelledData"), '[[',"
 
 
 #AllData<-(cbind(AllInstanceData[,1:3,with=FALSE],AllFeatureData[,2:12,with=FALSE],AllFFTData[,2:251,with=FALSE]))
-AllData<-(cbind(AllInstanceData[,1:3,with=FALSE],AllFeatureData[,2:ncol(AllFeatureData),with=FALSE]))
+AllData<-(cbind(AllInstanceData[,1:3,with=FALSE],AllFeatureData[,2:(ncol(AllFeatureData)-1),with=FALSE]))
 
 
 #rm(AllFFTData)
@@ -126,7 +126,7 @@ participants<-sapply(X = jointInstanceFiles, function (x) gsub(pattern = '.csv',
 }
 cat('writing AllData file')
 #write data
-write.csv(x=AllData,file = file.path(outputDataDirectory,paste0('AllData_',duration,'.csv')))
+write.csv(x=AllData,file = file.path(outputDataDirectory,paste0('AllData_',duration,'.csv')),row.names = FALSE)
 
 cat('writing participants')
 #write participants
