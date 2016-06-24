@@ -114,6 +114,10 @@ rm(Data)
 #For now, only work with labelled data
 AllData<-AllData[which(!AllData$behavior=='unknown'),]
 
+#Fix NAs in AllData
+AllData<-FixNAs(AllData)
+
+
 #Create testing data - leave one out
 if(any_deleted_participants==TRUE){
 participants<-sapply(X = jointInstanceFiles[-deleteParticipants], function (x) gsub(pattern = '.csv',replacement = '',x = x))

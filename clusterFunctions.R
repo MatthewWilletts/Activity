@@ -298,6 +298,25 @@ cleanUpCorr<-function(featureData){
  return(featureData)   
 }
 
+FixNAs<-function(data){
+  NArows<-which(rowSums(is.na(data))>0)
+  
+  for(i in 1:length(NArows)){
+    
+    NAcols<-which(is.na(AllData[NArows[i],]))
+    
+      for(j in 1:length(NAcols)){
+        #We will search for the nearest entry 99 places up or down that isnt NA and copy that into the value
+        downsequence<-(NArows[i]+1):(NArows[i]+100)
+        upsequence<-(NArows[i]-1):(NArows[i]-100)
+        rowsequence<-c(rbind(downsequence, upsequence))
+        potentialreplacements<-which(!is.na(data[rowsequence,NAcols[j]]))
+        replacement<-min(potentialreplacements)
+        data[NArows[i],NAcols[j]]<-data[rowsequence[potentialreplacements[replacement]],NAcols[j]]
+    }
+  }
+  return(data)
+}
 
 #Function to compute proximity between two node matricies -  
 computeProximity<-function(nodes1,nodes2,parallel=FALSE,mc.cores=1){
