@@ -37,7 +37,7 @@ cat(nchunks)
 source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterDirectories.R')
 
 #load participants
-load(file =file.path(resultsDataDirectory,'participants.RData'))
+load(file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RData')))
 
 
 training_nodes_all<-fread(input = file.path(RFoutput,paste0('training_nodes_',participants[leave_out],'.csv')))

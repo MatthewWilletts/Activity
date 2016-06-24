@@ -45,7 +45,7 @@ AllData<-as.matrix(AllData[,4:ncol(AllData),with=FALSE])
 
 
 #write participants
-load(file =file.path(resultsDataDirectory,'participants.RData'))
+load(file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RData')))
 
 
 iq<-which(AllIdentifierData==participants[leave_out])

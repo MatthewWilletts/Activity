@@ -35,7 +35,7 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterDirectories.R')
 
 
 #load participants
-load(file =file.path(resultsDataDirectory,'participants.RData'))
+load(file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RData')))
 
 
 ProxTrain<-rbind_prox_files(inputDirectory=NodeOutput,outputDirectory=NodeOutput,startToken='ProxTrain_',leftOutParticipant=participants[leave_out],nchunks=nchunks)
