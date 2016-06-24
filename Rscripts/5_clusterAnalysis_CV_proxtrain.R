@@ -79,8 +79,7 @@ load(file =file.path(resultsDataDirectory,'participants.RData'))
 ProxTrain_matrix<-read.big.matrix(filename =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'_subsampled.csv')),skip=1,header = FALSE,type = 'double',backingpath = ProxOutput,backingfile = paste0('ProxTrainBackingFile_',participants[leave_out]))
 
 #create output matrix - CV
-CV_matrix<-big.matrix(nrow=nrow(ProxTrain_matrix),ncol = ncol(ProxTrain_matrix),type = 'double',backingpath = ProxOutput,backingfile = paste0('CVBackingFile_',participants[leave_out]))
-
+CV_matrix<-filebacked.big.matrix(nrow=nrow(ProxTrain_matrix),ncol = ncol(ProxTrain_matrix),type = 'double',backingpath = ProxOutput,backingfile = paste0('CVBackingFile_',participants[leave_out]))
 
 #calculate mean values by row, column and overall
 rowmeanvalues<-BigRowSums(pBigMat = ProxTrain_matrix@address)
