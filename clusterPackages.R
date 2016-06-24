@@ -1,0 +1,17 @@
+#load packages
+
+library(optparse)
+library(randomForest)
+library(data.table)
+library(RSpectra)
+library(mhsmm)
+library(parallel)
+library(stringr)
+library(doMC)
+library(foreach)
+library(MASS)
+library(Rcpp)
+library(irlba)
+library(bigmemory)
+library(biganalytics)
+library(bigalgebra)
