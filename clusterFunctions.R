@@ -823,8 +823,8 @@ RF_nodes_chunk<-function(TrainingFData,TrainingBData,TestingFData,ncores,ntree,s
   split_Testing_features<-splitMatrix(TestingFData,nprocs = ncores)
   split_Training_features<-splitMatrix(TrainingFData,nprocs = ncores)
   
-  rm(TestingFData)
   rm(TrainingFData)
+  rm(TestingFData)
   
   #2.a we need to know which data point goes to which node of each tree in our training set!
   cat(paste0('extracting training nodes \n'))
@@ -855,8 +855,7 @@ RF_nodes_chunk<-function(TrainingFData,TrainingBData,TestingFData,ncores,ntree,s
   write.csv(x = testing_nodes,file=file.path(savefileloc,paste0('testing_nodes_',chunkID,'_',nametoken,'.csv')),row.names = FALSE)
   rm(testing_nodes)
   
-  splitMatrix(TestingFData,nprocs = ncores)
-  
+
   cat(paste0('extracting RF predictions \n'))
   #3. and also the RF predicitions for the testing set
   testing_RF_predicitions<-foreach(features=split_Testing_features,.combine = c, .packages='randomForest') %dopar%
