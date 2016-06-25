@@ -488,6 +488,30 @@ chunkOfMatrix<-function(data_matrix,nchunks,chunkID){
 }
 
 
+#Function to roughly split up matrix into chunks
+chunkOfMatrix_cols<-function(data_matrix,nchunks,chunkID){
+  
+  #divide up matrix into nchunks chunks
+  chunks<-splitNumber(ncol(data_matrix),nchunks)
+  
+  #attach rownames
+  colnames(data_matrix)<-1:ncol(data_matrix)
+  
+  end_indices<-cumsum(chunks)
+  start_indices<-cumsum(c(1,chunks))
+  
+  if(chunkID<=nchunks){
+    chunk_of_matrix<-data_matrix[,start_indices[chunkID]:end_indices[chunkID]]
+    
+    return(chunk_of_matrix)
+  } else {
+    cat('chunkID must be smaller than or equal to nchunks')
+  }
+  
+}
+
+
+
 calcZ<-function(ProxTrain,Kmax,CV=TRUE){
 #Diag <- diag(apply(ProxTrain, 1, sum))
 #U<-Diag-ProxTrain
@@ -1385,47 +1409,18 @@ bind_sum_files<-function(inputDirectory,startToken,leftOutParticipant=participan
 }
 
 
-ComputeRowSumMatrixChunk<-function(Proximity,nchunks=nchunks,chunkID=chunkID,ncores=ncores,coreID){
+ComputeRowSumMatrixChunk<-function(Proximity_chunk){
   
 
-  chunkIndices<-splitNumber(number = nrow(Proximity),nprocs = nchunks)
-  chunkIndices<-c(0,cumsum(chunkIndices))
-  #now find indices that we are to calculate CV over for this node
-  startIndex<-chunkIndices[chunkID]
-  endIndex<-chunkIndices[chunkID+1]
-  
-  
-  #now for this core
-  procIndices<-splitNumber(number = (endIndex-startIndex),nprocs = ncores)
-  procIndices<-c(startIndex,startIndex+cumsum(procIndices))
-  
-  procStartIndex<-procIndices[coreID]
-  procEndIndex<-procIndices[coreID+1]
-  
-  rowsums<-RowSumsChunk(pBigMat=Proximity,start_row =procStartIndex,end_row= procEndIndex)
+  rowsums<-RowSumsChunk(pBigMat=Proximity,start_row =0,end_row= nrow(Proximity_chunk))
   
   return(rowsums)
 }
 
-ComputeColSumMatrixChunk<-function(Proximity,nchunks=nchunks,chunkID=chunkID,ncores=ncores,coreID){
+ComputeColSumMatrixChunk<-function(Proximity_chunk){
   
 
-  
-  chunkIndices<-splitNumber(number = ncol(Proximity),nprocs = nchunks)
-  chunkIndices<-c(0,cumsum(chunkIndices))
-  #now find indices that we are to calculate CV over for this node
-  startIndex<-chunkIndices[chunkID]
-  endIndex<-chunkIndices[chunkID+1]
-  
-  
-  #now for this core
-  procIndices<-splitNumber(number = (endIndex-startIndex),nprocs = ncores)
-  procIndices<-c(startIndex,startIndex+cumsum(procIndices))
-  
-  procStartIndex<-procIndices[coreID]
-  procEndIndex<-procIndices[coreID+1]
-  
-  colsums<-ColSumsChunk(pBigMat=Proximity,start_col =procStartIndex,end_col= procEndIndex)
+  colsums<-ColSumsChunk(pBigMat=Proximity,start_col =0,end_col= ncol(Proximity_chunk))
   
   return(colsums)
 }

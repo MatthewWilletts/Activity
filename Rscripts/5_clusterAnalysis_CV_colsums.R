@@ -36,7 +36,7 @@ ProxTrain_matrix<-as.matrix(ProxTrain_dt)
 rm(ProxTrain_dt)
 
 
-ProxTrain_matrix_part<-chunkOfMatrix_col(data_matrix = ProxTrain_matrix,nchunks =nchunks,chunkID =  chunkID)
+ProxTrain_matrix_part<-chunkOfMatrix_cols(data_matrix = ProxTrain_matrix,nchunks =nchunks,chunkID =  chunkID)
 
 ProxTrain_matrix_part_chunk<-splitMatrix_cols(data_matrix = ProxTrain_matrix_part,nprocs =ncores )
 
