@@ -10,7 +10,7 @@ option_list <- list(
   make_option(c("-p", "--participant"), type="integer", default=1,
               help="which participant we are leaving out of analysis",
               metavar="number"),
-  make_option(c("-t", "--trees"), type="integer", default=1000,
+  make_option(c("-t", "--trees"), type="integer", default=1600,
               help="number of trees for random forest",
               metavar="number"),
   make_option(c("-d", "--duration"), type="integer", default=30,
