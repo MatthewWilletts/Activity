@@ -429,6 +429,23 @@ chunked_matrix<-lapply(X = 1:nprocs,FUN = function(x) data_matrix[start_indices[
 return(chunked_matrix)
 }
 
+splitMatrix_cols<-function(data_matrix,nprocs){
+  
+  #divide up matrix into nchunks=ncores chunks
+  chunks<-splitNumber(ncol(data_matrix),nprocs)
+  
+  #attach rownames
+  colnames(data_matrix)<-1:ncol(data_matrix)
+  
+  end_indices<-cumsum(chunks)
+  start_indices<-cumsum(c(1,chunks))
+  
+  chunked_matrix<-lapply(X = 1:nprocs,FUN = function(x) data_matrix[,start_indices[x]:end_indices[x]])
+  
+  return(chunked_matrix)
+}
+
+
 #function to divide a number into chunks
 splitNumber<-function(number,nprocs){
   
@@ -1371,7 +1388,7 @@ bind_sum_files<-function(inputDirectory,startToken,leftOutParticipant=participan
 ComputeRowSumMatrixChunk<-function(Proximity,nchunks=nchunks,chunkID=chunkID,ncores=ncores,coreID){
   
 
-  chunkIndices<-splitNumber(number = nrow(Proximity.bigmatrix),nprocs = nchunks)
+  chunkIndices<-splitNumber(number = nrow(Proximity),nprocs = nchunks)
   chunkIndices<-c(0,cumsum(chunkIndices))
   #now find indices that we are to calculate CV over for this node
   startIndex<-chunkIndices[chunkID]
@@ -1471,7 +1488,7 @@ computeCVhalfbigmatrix<-function(Proximity.matrix,CV.bigmatrix.descfilepath,rowm
   
   procStartIndex<-procIndices[coreID]
 
-  zero<-BigCVpart(pBigMat = Proximity.bigmatrix@address,outputBigMat = CV.bigmatrix@address,rmeans = rowmeanvalues,cmeans =colmeanvalues,totalmeanval =meanvalue,start_row =procStartIndex)
+  zero<-HalfBigCVpart(pBigMat = Proximity.matrix,outputBigMat = CV.bigmatrix@address,rmeans = rowmeanvalues,cmeans =colmeanvalues,totalmeanval =meanvalue,start_row =procStartIndex)
   
   return(cat(paste0('finished CV for node ',chunkID,' and core ',coreID,'\n')))
   

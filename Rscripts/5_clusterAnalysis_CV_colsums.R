@@ -33,9 +33,17 @@ load(file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RDat
 
 ProxTrain_dt<-fread(input =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'.csv')),skip=1,header = FALSE)
 ProxTrain_matrix<-as.matrix(ProxTrain_dt)
+rm(ProxTrain_dt)
 
-ColSum<-foreach(corenumber=1:ncores, .combine = c) %dopar% ComputeColSumMatrixChunk(
-  Proximity=ProxTrain_matrix,nchunks=nchunks,chunkID=chunkID,ncores=ncores,coreID=corenumber)
+
+ProxTrain_matrix_part<-chunkOfMatrix_col(data_matrix = ProxTrain_matrix,nchunks =nchunks,chunkID =  chunkID)
+
+ProxTrain_matrix_part_chunk<-splitMatrix_cols(data_matrix = ProxTrain_matrix_part,nprocs =ncores )
+
+rm(ProxTrain_matrix_part)
+
+
+ColSum<-foreach(splitProx=ProxTrain_matrix_part_chunk, .combine = c) %dopar% ComputeColSumMatrixChunk(Proximity_chunk=splitProx)
 
 
 #save results
