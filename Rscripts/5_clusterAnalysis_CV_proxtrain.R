@@ -32,13 +32,15 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterDirectories.R')
 load(file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RData')))
 
 #load data - ProxTrain
-ProxTrain_matrix<-read.big.matrix(filename =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'.csv')),skip=1,header = FALSE,type = 'double',backingpath = ProxOutput,backingfile = paste0('ProxTrainBackingFile_',participants[leave_out]))
+#ProxTrain_matrix<-read.big.matrix(filename =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'.csv')),skip=1,header = FALSE,type = 'double',backingpath = ProxOutput,backingfile = paste0('ProxTrainBackingFile_',participants[leave_out]))
+  ProxTrain_dt<-fread(input =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'.csv')),skip=1,header = FALSE)
+  ProxTrain_matrix<-as.matrix(ProxTrain_dt)
 
 #create output matrix - CV
 CV_matrix<-filebacked.big.matrix(nrow=nrow(ProxTrain_matrix),ncol = ncol(ProxTrain_matrix),type = 'double',backingpath = ProxOutput,backingfile = paste0('CVBackingFile_',participants[leave_out]))
 
 #calculate mean values by row, column and overall
-rowmeanvalues<-BigRowSums(pBigMat = ProxTrain_matrix@address)
+rowmeanvalues<-rowsum(ProxTrain_matrix)
 
 meanvalue<-sum(rowmeanvalues)/(ncol(ProxTrain_matrix)*nrow(ProxTrain_matrix))
 
