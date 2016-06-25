@@ -31,10 +31,11 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterDirectories.R')
 #load participants
 load(file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RData')))
 
-ProxTrainDescriptorFile<-file.path(ProxOutput,paste0('ProxTrainBackingFile_',participants[leave_out],'.desc'))
+ProxTrain_dt<-fread(input =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'.csv')),skip=1,header = FALSE)
+ProxTrain_matrix<-as.matrix(ProxTrain_dt)
 
-ColSum<-foreach(corenumber=1:ncores, .combine = c) %dopar% ComputeColSumBigMatrixChunk(
-  Proximity.bigmatrix.descfilepath=ProxTrainDescriptorFile,nchunks=nchunks,chunkID=chunkID,ncores=ncores,coreID=corenumber)
+ColSum<-foreach(corenumber=1:ncores, .combine = c) %dopar% ComputeColSumMatrixChunk(
+  Proximity=ProxTrain_matrix,nchunks=nchunks,chunkID=chunkID,ncores=ncores,coreID=corenumber)
 
 
 #save results
