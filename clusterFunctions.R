@@ -1412,7 +1412,7 @@ bind_sum_files<-function(inputDirectory,startToken,leftOutParticipant=participan
 ComputeRowSumMatrixChunk<-function(Proximity_chunk){
   
 
-  rowsums<-RowSumsChunk(pBigMat=Proximity,start_row =0,end_row= nrow(Proximity_chunk))
+  rowsums<-RowSumsChunk(pBigMat=Proximity_chunk,start_row =0,end_row= nrow(Proximity_chunk))
   
   return(rowsums)
 }
@@ -1420,7 +1420,7 @@ ComputeRowSumMatrixChunk<-function(Proximity_chunk){
 ComputeColSumMatrixChunk<-function(Proximity_chunk){
   
 
-  colsums<-ColSumsChunk(pBigMat=Proximity,start_col =0,end_col= ncol(Proximity_chunk))
+  colsums<-ColSumsChunk(pBigMat=Proximity_chunk,start_col =0,end_col= ncol(Proximity_chunk))
   
   return(colsums)
 }
