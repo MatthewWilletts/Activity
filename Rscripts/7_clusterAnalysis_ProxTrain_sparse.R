@@ -1,8 +1,8 @@
 #MultiCore analysis on ARCUS B cluster of 120 or so participants labelled data, using the Holmes Algorithm
 
 #load packages
-source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterPackages.R')
-
+library(data.table)
+library(Matrix)
 
 
 #In this script we will be doing 'leave one out' analysis for our participants
@@ -43,7 +43,9 @@ ProxTrain_matrix<-as.matrix(ProxTrain_dt)
 rm(ProxTrain_dt)
 
 #Convert to sparse
-ProxTrain_sparse<-as(ProxTrain_matrix,'dsCMatrix')
+ProxTrain_sparse<-Matrix(ProxTrain_matrix,sparse=TRUE)
+
+rm(ProxTrain_matrix)
 
 cat('conversion complete \n')
 
