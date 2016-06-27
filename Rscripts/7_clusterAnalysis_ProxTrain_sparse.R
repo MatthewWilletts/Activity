@@ -28,7 +28,7 @@ ncores<-16
 
 set.seed(chunkID)
 
-registerDoMC(ncores/2)
+registerDoMC(ncores)
 
 #define data directories
 source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterDirectories.R')
