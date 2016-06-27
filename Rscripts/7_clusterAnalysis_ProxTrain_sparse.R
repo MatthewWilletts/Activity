@@ -46,14 +46,20 @@ ProxTrain_sparse<-Matrix(sparse = TRUE)
 for(i in 1:nchunks){
   ProxTrain_df<-read.csv(file =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'.csv')),skip=start_indices[i],nrows = chunks[i],header = FALSE)
   
-  ProxTrain_sparse_temp<-Matrix(ProxTrain_df,sparse=TRUE)
+  ProxTrain_matrix<-as.matrix(ProxTrain_df)
+  
+  ProxTrain_sparse_temp<-Matrix(ProxTrain_matrix,sparse=TRUE)
 
   ProxTrain_sparse<-rBind(ProxTrain_sparse,ProxTrain_sparse_temp)
+  
+  rm(ProxTrain_df)
+  
+  rm(ProxTrain_matrix)
+  
+  rm(ProxTrain_sparse_temp)
 }
 
-rm(ProxTrain_df)
 
-rm(ProxTrain_sparse_temp)
 
 cat('conversion complete \n')
 
