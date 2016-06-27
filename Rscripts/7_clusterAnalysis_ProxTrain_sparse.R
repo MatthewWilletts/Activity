@@ -8,9 +8,6 @@ library(Matrix)
 #In this script we will be doing 'leave one out' analysis for our participants
 
 
-source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
-
-
 #Take in arguements from command line
 #This script will calculate a chunk of the ProxTrain matrix
 

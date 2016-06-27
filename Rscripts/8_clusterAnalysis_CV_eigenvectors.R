@@ -4,10 +4,6 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterPackages.R')
 
 #In this script we will be doing 'leave one out' analysis for our participants
 
-
-source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
-
-
 #Take in arguements from command line
 #This script will calculate a chunk of the ProxTrain matrix
 
@@ -37,7 +33,7 @@ load(file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RDat
 CVDescriptorFile<-paste0('CVBackingFile_',participants[leave_out],'.desc')
 
 
-CV<-attach.big.matrix(CVDescriptorFile)
+CV<-attach.big.matrix(file.part(ProxOutput,CVDescriptorFile))
 
 #Now compute first 10 eigenvectors
 
