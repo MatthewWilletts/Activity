@@ -1,6 +1,7 @@
 #MultiCore analysis on ARCUS B cluster of 120 or so participants labelled data, using the Holmes Algorithm
 
 #load packages
+library(optparse)
 library(data.table)
 library(Matrix)
 library(doMC)
