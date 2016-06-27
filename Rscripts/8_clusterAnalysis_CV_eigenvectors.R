@@ -37,8 +37,22 @@ CV<-attach.big.matrix(file.path(ProxOutput,CVDescriptorFile))
 
 #Now compute first 10 eigenvectors
 
+#Need to define matrix multiplication for big matrices:
+matmul = function(A, B, transpose=FALSE)
+{
+  # Bigalgebra requires matrix/vector arguments
+  if(is.null(dim(B))) B = cbind(B)
+  
+  if(transpose)
+    return(cbind((t(B) %*% A)[]))
+  
+  cbind((A %*% B)[])
+}
+
+
+
 cat('calculating eigenvectors \n')
-Eigenvectors<-partial_eigen(CV, n = 10, symmetric = TRUE)
+Eigenvectors<-partial_eigen(CV, n = 10, symmetric = TRUE,matmul=matmul)
 
 cat('saving \n')
 save(Eigenvectors,file = file.path(ProxOutput,'eigenvectors.RData'))

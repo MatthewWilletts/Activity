@@ -38,11 +38,10 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterDirectories.R')
 load(file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RData')))
 
 #load mean values
-
 ProxTrain_dt<-fread(input =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'.csv')),skip=1,header = FALSE)
 ProxTrain_matrix<-as.matrix(ProxTrain_dt)
 rm(ProxTrain_dt)
-
+cat('now convert to sparse \n')
 #Convert to sparse
 ProxTrain_sparse<-Matrix(ProxTrain_matrix,sparse=TRUE)
 
