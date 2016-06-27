@@ -1400,12 +1400,12 @@ ComputeColSumBigMatrixChunk<-function(Proximity.bigmatrix.descfilepath,nchunks=n
   return(colsums)
 }
 
-bind_sum_files<-function(inputDirectory,startToken,leftOutParticipant=participants[leave_out],nchunks){
+bind_sum_files<-function(inputDirectory,startToken,leftOutParticipant=participants[leave_out],start,stop){
 
-  chunkids<-1:nchunks
+  chunkids<-start:stop
   listOfFiles<-paste0(startToken,'_',leftOutParticipant,'_',chunkids,'_subsampled.csv')
 
-  all_nodes<-foreach(fileaddress=listOfFiles,.combine = 'c',.multicombine = TRUE) %dopar% as.vector(read.csv(file=file.path(inputDirectory,fileaddress)))
+  all_nodes<-foreach(fileaddress=listOfFiles,.combine = rbind,.multicombine = TRUE) %dopar% as.vector(read.csv(file=file.path(inputDirectory,fileaddress)))
 }
 
 

@@ -38,23 +38,34 @@ load(file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RDat
 
 #load mean values
 
-rowmeanvalues<-bind_sum_files(inputDirectory =ProxOutput,startToken ='CV_rowsums',leftOutParticipant =participants[leave_out],nchunks = nchunks)
-colmeanvalues<-bind_sum_files(inputDirectory =ProxOutput,startToken ='CV_colsum',leftOutParticipant = participants[leave_out],nchunks = nchunks)
+rowmeanvalues<-read.csv(file.path(ProxOutput,'CV_rowsums_p002.csv'))
+rowmeanvalues<-rowmeanvalues$x
+colmeanvalues<-rowmeanvalues
 
 meanvalue<-sum(rowmeanvalues)
 rowmeanvalues<-rowmeanvalues/length(colmeanvalues)
 colmeanvalues<-colmeanvalues/length(rowmeanvalues)
 meanvalue<-meanvalue/(length(colmeanvalues)*length(rowmeanvalues))
 
+ProxTrain_dt<-fread(input =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'.csv')),skip=1,header = FALSE)
+ProxTrain_matrix<-as.matrix(ProxTrain_dt)
+rm(ProxTrain_dt)
 
-ProxTrainDescriptorFile<-paste0('ProxTrainBackingFile_',participants[leave_out],'.desc')
+
+ProxTrain_matrix_part<-chunkOfMatrix_cols(data_matrix = ProxTrain_matrix,nchunks =nchunks,chunkID =  chunkID)
+
+ProxTrain_matrix_part_chunk<-splitMatrix_cols(data_matrix = ProxTrain_matrix_part,nprocs =ncores )
+
+rm(ProxTrain_matrix_part)
+
+
 
 CVDescriptorFile<-paste0('CVBackingFile_',participants[leave_out],'.desc')
 
 
 #Now calculate CV matrix piecewise
 
-listofEndRows<- foreach(corenumber=1:ncores, .combine = rbind) %dopar% computeCVhalfbigmatrix()
-  CV.bigmatrix.descfilepath =file.path(ProxOutput,CVDescriptorFile)
-  ,rowmeanvalues=rowmeanvalues,colmeanvalues = colmeanvalues,meanvalue = meanvalue
-  ,nchunks = nchunks,chunkID = chunkID,ncores = ncores,coreID = corenumber)
+listofEndRows<- foreach(corenumber=1:ncores, .combine = rbind) %dopar% computeCVhalfbigmatrix(
+  Proximity.matrix=ProxTrain_matrix_part_chunk,CV.bigmatrix.descfilepath =file.path(ProxOutput,CVDescriptorFile),
+  rowmeanvalues=rowmeanvalues,colmeanvalues = colmeanvalues,meanvalue = meanvalue,
+  nchunks = nchunks,chunkID = chunkID,ncores = ncores,coreID = corenumber)
