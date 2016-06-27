@@ -1,5 +1,6 @@
 source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterPackages.R')
 
+source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
 
 
 #In this script we will be doing 'leave one out' analysis for our participants
