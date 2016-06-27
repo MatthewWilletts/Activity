@@ -52,7 +52,7 @@ matmul = function(A, B, transpose=FALSE)
 
 
 cat('calculating eigenvectors \n')
-Eigenvectors<-partial_eigen(CV, n = 10, symmetric = TRUE,matmul=matmul)
+Eigenvectors<-partial_eigen(CV, n = 10, symmetric = TRUE,mult=matmul)
 
 cat('saving \n')
 save(Eigenvectors,file = file.path(ProxOutput,'eigenvectors.RData'))
