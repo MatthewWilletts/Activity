@@ -1470,7 +1470,7 @@ computeCVhalfbigmatrix<-function(Proximity.matrix,CV.bigmatrix.descfilepath,rowm
   CV.bigmatrix<-attach.big.matrix(CV.bigmatrix.descfilepath)
   
   
-  chunkIndices<-splitNumber(number = nrow(Proximity.matrix),nprocs = nchunks)
+  chunkIndices<-splitNumber(number = nrow(CV.bigmatrix),nprocs = nchunks)
   chunkIndices<-c(0,cumsum(chunkIndices))
   #now find indices that we are to calculate CV over for this node
   startIndex<-chunkIndices[chunkID]
@@ -1484,7 +1484,6 @@ computeCVhalfbigmatrix<-function(Proximity.matrix,CV.bigmatrix.descfilepath,rowm
   procStartIndex<-procIndices[coreID]
 
   zero<-HalfBigCVpart(pBigMat = Proximity.matrix,outputBigMat = CV.bigmatrix@address,rmeans = rowmeanvalues,cmeans =colmeanvalues,totalmeanval =meanvalue,start_row =procStartIndex)
-  
   return(cat(paste0('finished CV for node ',chunkID,' and core ',coreID,'\n')))
   
 }

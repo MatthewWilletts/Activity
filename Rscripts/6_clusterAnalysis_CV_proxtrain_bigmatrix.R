@@ -50,10 +50,10 @@ ProxTrain_dt<-fread(input =file.path(ProxOutput,paste0('ProxTrain_',participants
 ProxTrain_matrix<-as.matrix(ProxTrain_dt)
 rm(ProxTrain_dt)
 
+ProxTrain_matrix_part<-chunkOfMatrix(data_matrix = ProxTrain_matrix,nchunks =nchunks,chunkID =  chunkID)
+rm(ProxTrain_matrix)
 
-ProxTrain_matrix_part<-chunkOfMatrix_cols(data_matrix = ProxTrain_matrix,nchunks =nchunks,chunkID =  chunkID)
-
-ProxTrain_matrix_part_chunk<-splitMatrix_cols(data_matrix = ProxTrain_matrix_part,nprocs =ncores )
+ProxTrain_matrix_part_chunk<-splitMatrix(data_matrix = ProxTrain_matrix_part,nprocs =ncores )
 
 rm(ProxTrain_matrix_part)
 
@@ -64,7 +64,7 @@ CVDescriptorFile<-paste0('CVBackingFile_',participants[leave_out],'.desc')
 
 #Now calculate CV matrix piecewise
 
-listofEndRows<- foreach(corenumber=1:ncores, .combine = rbind) %dopar% computeCVhalfbigmatrix(
+listofEndRows<- foreach(corenumber=1:ncores, .combine = rbind,.inorder =  FALSE) %dopar% computeCVhalfbigmatrix(
   Proximity.matrix=ProxTrain_matrix_part_chunk,CV.bigmatrix.descfilepath =file.path(ProxOutput,CVDescriptorFile),
   rowmeanvalues=rowmeanvalues,colmeanvalues = colmeanvalues,meanvalue = meanvalue,
   nchunks = nchunks,chunkID = chunkID,ncores = ncores,coreID = corenumber)
