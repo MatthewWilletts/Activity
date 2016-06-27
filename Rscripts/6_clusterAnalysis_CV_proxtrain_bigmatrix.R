@@ -40,12 +40,11 @@ load(file =file.path(resultsDataDirectory,paste0('participants_',duration,'.RDat
 
 rowmeanvalues<-read.csv(file.path(ProxOutput,'CV_rowsums_p002.csv'))
 rowmeanvalues<-rowmeanvalues$x
+rowmeanvalues<-rowmeanvalues/length(rowmeanvalues)
 colmeanvalues<-rowmeanvalues
 
 meanvalue<-sum(rowmeanvalues)
-rowmeanvalues<-rowmeanvalues/length(colmeanvalues)
-colmeanvalues<-colmeanvalues/length(rowmeanvalues)
-meanvalue<-meanvalue/(length(colmeanvalues)*length(rowmeanvalues))
+meanvalue<-meanvalue/(length(rowmeanvalues))
 
 ProxTrain_dt<-fread(input =file.path(ProxOutput,paste0('ProxTrain_',participants[leave_out],'.csv')),skip=1,header = FALSE)
 ProxTrain_matrix<-as.matrix(ProxTrain_dt)
