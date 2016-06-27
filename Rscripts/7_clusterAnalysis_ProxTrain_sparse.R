@@ -43,7 +43,7 @@ ProxTrain_matrix<-as.matrix(ProxTrain_dt)
 rm(ProxTrain_dt)
 
 #Convert to sparse
-ProxTrain_sparse<-as(ProxTrain_matrix,'dsRMatrix')
+ProxTrain_sparse<-as(ProxTrain_matrix,'dsCMatrix')
 
 cat('conversion complete \n')
 
