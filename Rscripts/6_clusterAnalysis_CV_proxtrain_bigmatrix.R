@@ -54,8 +54,7 @@ CVDescriptorFile<-paste0('CVBackingFile_',participants[leave_out],'.desc')
 
 #Now calculate CV matrix piecewise
 
-listofEndRows<- foreach(corenumber=1:ncores, .combine = rbind) %dopar% computeCVbigmatrix(
-  Proximity.bigmatrix.descfilepath=file.path(ProxOutput,ProxTrainDescriptorFile)
-  ,CV.bigmatrix.descfilepath =file.path(ProxOutput,CVDescriptorFile)
+listofEndRows<- foreach(corenumber=1:ncores, .combine = rbind) %dopar% computeCVhalfbigmatrix()
+  CV.bigmatrix.descfilepath =file.path(ProxOutput,CVDescriptorFile)
   ,rowmeanvalues=rowmeanvalues,colmeanvalues = colmeanvalues,meanvalue = meanvalue
   ,nchunks = nchunks,chunkID = chunkID,ncores = ncores,coreID = corenumber)
