@@ -3,7 +3,10 @@
 #load packages
 library(data.table)
 library(Matrix)
-
+library(doMC)
+library(parallel)
+library(MASS)
+library(SparseM)
 
 #In this script we will be doing 'leave one out' analysis for our participants
 
