@@ -23,11 +23,11 @@ source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterFunctions.R')
 source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterInputs.R')
 
 
-ncores<-16
+ncores<-2
 
 set.seed(chunkID)
 
-registerDoMC(ncores/2)
+registerDoMC(ncores)
 
 #define data directories
 source('/home/dph-ukbaccworkgroup/magd4534/Activity/clusterDirectories.R')
