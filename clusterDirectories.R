@@ -17,3 +17,5 @@ resultsDataDirectory<-'/data/dph-ukbaccworkgroup/magd4534/results/30sec'
 RFoutput<-paste0(resultsDataDirectory,'/RFoutput')
 HMMoutput<-paste0(resultsDataDirectory,'/HMMoutput')
 ProxOutput<-paste0(resultsDataDirectory,'/RFoutput/ProxTrain')
+
+ProxTestOutput<-paste0(resultsDataDirectory,'/RFoutput/ProxTest')

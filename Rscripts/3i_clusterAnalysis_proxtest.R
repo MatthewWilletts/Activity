@@ -81,8 +81,8 @@ nrow_proxtest<-nrow(ProxTest)
 save(time.taken,file = file.path(RFoutput,paste0('ProxTest_time_',chunkID,'_',participants[leave_out],'.RData')))
 save(nrow_proxtest,file = file.path(RFoutput,paste0('ProxTest_nrow_',chunkID,'_',participants[leave_out],'.RData')))
 
-if(!file.exists(file.path(RFoutput,paste0('ProxTest_',participants[leave_out],'.csv')))){
-  write.csv(x = ProxTest,file =file.path(RFoutput,paste0('ProxTest_',chunkID,'_',participants[leave_out],'.csv')),row.names = FALSE )
+if(!file.exists(file.path(ProxTestOutput,paste0('ProxTest_',participants[leave_out],'.csv')))){
+  write.csv(x = ProxTest,file =file.path(ProxTestOutput,paste0('ProxTest_',chunkID,'_',participants[leave_out],'.csv')),row.names = FALSE )
 }
 
 
