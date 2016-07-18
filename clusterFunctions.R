@@ -89,6 +89,7 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,outputLabelDir,ins
     labelData$StartDateTime<-roundXsecs(labelData$StartDateTime,startTime = labelData$StartDateTime[1],duration = duration)
     labelData$EndDateTime<-roundXsecs(labelData$EndDateTime,startTime = labelData$StartDateTime[1],duration = duration)
     
+    
     #now we need to turn from bout level labels to annotations. Here we use a slightly modified TLBC function, annotationsToLabels
     extractLabelsSingleFile(labelData, identifier= participantID,winSize = duration,instanceLabelDirectory = instanceLabelDirectory)
     
@@ -106,8 +107,14 @@ cleanData <- function(jointFiles,labelDirectory,dataDirectory,outputLabelDir,ins
     
     
     cat(paste0('Writing ALL feature data file ', participantID,'.csv','\n'))
-    write.csv(x=labelledData$labelledFeatureData,file=paste0(outputDataDirectory,'/', participantID,'ALLFeature.csv'),row.names=FALSE)
-    
+    #write.csv(x=labelledData$labelledFeatureData,file=paste0(outputDataDirectory,'/', participantID,'ALLFeature.csv'),row.names=FALSE)
+    write.csv(x=labelData,file=paste0(outputDataDirectory,'/', participantID,'boutData'),row.names=FALSE)
+  
+  }
+  return(list(cleanData=cleanData,labelledData=labelledData))
+  
+}
+
     if(FFT){
     cat(paste0('Writing ALL FFT data file ', participantID,'.csv','\n'))
     write.csv(x=labelledData$labelledFFTData,file=paste0(outputDataDirectory,'/', participantID,'ALLFFT.csv'),row.names=FALSE)
@@ -560,7 +567,9 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
   
   reference<-factor(testing_RF_predicitions,levels = levels(lda_prediction$class))
   
-  for(i in 1:20){
+  LDA_confusion<-matrix(ncol=length(levels(lda_prediction$class)),nrow=length(levels(lda_prediction$class)))
+  
+  for(i in 1:1){
     
   #take a half subset of data for confusion matrix
     
@@ -636,8 +645,13 @@ kSpaceAnalysis<-function(kval,Z,ProxTest,ProxTrain,TrainingData,testing_RF_predi
   
   #output LDA and HMM confusion matrices
   
-  LDAperformance<-LDA_accuracy
-  # HMMperformance[[i]]<-HMM_confusion_matrix
+  LDA_accuracy_mean<-mean(LDA_accuracy)
+  LDA_accuracy_std<-sd(LDA_accuracy)
+  
+  LDAperformance<-list(LDA_conf=lda_RF_confusion_matrix$table)
+  #LDAperformance<-LDA_accuracy
+  
+    # HMMperformance[[i]]<-HMM_confusion_matrix
   
   #write predicitions
   cat(paste0('saving predictions \n'))
@@ -794,15 +808,15 @@ Z_cv<-calcZ(ProxTrain=ProxTrain,Kmax=Kmax,CV = TRUE)
 #load(file='~/Documents/Oxford/Activity/UCI_Z.RData')
 #load(file='~/Documents/Oxford/Activity/UCI_Z_cv.RData')
 
-LDAperformance_output<-foreach(k=1:Kmax,.combine = rbind) %dopar% kSpaceAnalysis(
-  kval=k,Z=Z,ProxTest=ProxTest,ProxTrain=ProxTrain,TrainingData=TrainingData,
-  testing_RF_predicitions=testing_RF_predicitions)
+# LDAperformance_output<-foreach(k=1:Kmax,.combine = list) %dopar% kSpaceAnalysis(
+#   kval=k,Z=Z,ProxTest=ProxTest,ProxTrain=ProxTrain,TrainingData=TrainingData,
+#   testing_RF_predicitions=testing_RF_predicitions)
 
-LDAperformance_cv_output<-foreach(k=1:Kmax,.combine = rbind) %dopar% kSpaceAnalysis(
+LDAperformance_cv_output<-foreach(k=1:Kmax,.combine = list) %dopar% kSpaceAnalysis(
   kval=k,Z=Z_cv,ProxTest=ProxTest,ProxTrain=ProxTrain,TrainingData=TrainingData,
   testing_RF_predicitions=testing_RF_predicitions)
 
-return(list(LDAperformance_output=LDAperformance_output,LDAperformance_cv_output=LDAperformance_cv_output,Z=Z,Z_cv=Z_cv,ProxTrain=ProxTrain,ProxTest=ProxTest,testing_RF_predicitions=testing_RF_predicitions))
+return(list(LDAperformance_cv_output=LDAperformance_cv_output,Z=Z,Z_cv=Z_cv,ProxTrain=ProxTrain,ProxTest=ProxTest,testing_RF_predicitions=testing_RF_predicitions))
 
 }
 
@@ -2123,4 +2137,18 @@ convtests <- function (Bsz, tol, k_org, U_B, S_B, V_B,
   if (k > Bsz - 3) k <- max(Bsz - 3,1)
   return (list(converged=FALSE, U_B=U_B, S_B=S_B, V_B=V_B, k=k) )
 }
+
+
+#Function to collapse down labels
+reduceLabels<-function(data,labelsToReduce,overallLabel){
+  #labelsToReduce is a list, each element of which is a vector of strings giving the label names to be combined
+  #overallLabel is a vector of strings, each entry gives the new overall name for the labels in the corresponding
+  #list entry of labelsToReduce
+  for (i in 1:length(overallLabel)){
+    ix<-which(data$behavior %in% labelsToReduce[[i]])
+    data$behavior[ix]<-overallLabel[i]
+  }
+  return(data)
+}
+
 

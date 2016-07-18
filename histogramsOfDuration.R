@@ -47,12 +47,12 @@ certainlyTrueLabelDirectory<-paste0(dataDirectory,'/CertainlyTrueLabels')
 certainlyTrueFeatureDirectory<-paste0(dataDirectory,'/CertainlyTrueFeatures')
 
 
-
+cleanDataDirectory<-'~/Documents/Oxford/Activity/boutData'
 cleanDataFiles<-list.files(cleanDataDirectory)
 
 listOfCleanData<-list()
 for(i in 1:length(cleanDataFiles)){
-  listOfCleanData[[i]]<-fread(input = paste0(cleanDataDirectory,'/',cleanDataFiles[i]))
+  listOfCleanData[[i]]<-read.csv(paste0(cleanDataDirectory,'/',cleanDataFiles[i]))
 }
 
 cleanData<-rbindlist((listOfCleanData))
@@ -79,13 +79,13 @@ for(i in 1:length(behaviors)){
   
   values<-fitdistr(behaviorBouts$Duration,"geometric")
   sim<-qgeom(ppoints(length(behaviorBouts$Duration)),prob=values$estimate)
-  png(paste0(plotDirectory,'/QQ_',behaviors[i],'.png'))
+  pdf(paste0(plotDirectory,'/QQ_',behaviors[i],'.pdf'),width = 6, height = 6)
   qqplot(x = sim,behaviorBouts$Duration,xlab = 'Theoretical quantiles',ylab = 'Duration quantiles')
   qqline(sim, distribution = function(p) qgeom(p, values$estimate),
          prob = c(0.25, 0.75), col = "red")
   dev.off()
-  png(paste0(plotDirectory,'/Hist_',behaviors[i],'.png'))
-  hist(behaviorBouts$Duration,main =paste0('Histogram of Duration of ',behaviors[i],' for initial data'))
+  pdf(paste0(plotDirectory,'/Hist_',behaviors[i],'.pdf'),width = 6, height = 6)
+  hist(behaviorBouts$Duration,main =paste0('Histogram of Duration of ',behaviors[i]),xlab='Duration /mins')
   dev.off()
 }
 

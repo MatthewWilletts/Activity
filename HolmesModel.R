@@ -230,9 +230,12 @@ class(hmmData)<-"hsmm.data"
 
 states<-unique(ReduceInstanceDataNAs$behavior)
 states<-states[!is.na(states)]
-J <- length(states)
-init <- c(1, rep(0,times=J-1))
-P <- matrix(c(10,1,1,1,1,10,1,1,1,1,10,1,1,1,1,10), nrow = J)/(10+(J-1))
+
+
+#calculate empirial transition matrix
+statesLength<-length(states)
+P<-table(states[1:statesLength-1],states[2:statesLength])
+P <- P / rowSums(P)
 
 mu<-list()
 sigma<-list()
