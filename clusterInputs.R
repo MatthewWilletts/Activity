@@ -15,7 +15,10 @@ option_list <- list(
               metavar="number"),
   make_option(c("-d", "--duration"), type="integer", default=30,
               help="size of window for analysis",
-              metavar="number")
+              metavar="number"),
+  make_option(c("-s", "--settings"), type="integer",
+              help="input number to give settings to script",
+              metavar="number")            
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -29,3 +32,5 @@ leave_out<-opt$participant
 ntrees<-opt$trees
 
 duration<-opt$duration
+
+input_number<-opt$settings
